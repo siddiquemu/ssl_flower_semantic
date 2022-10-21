@@ -1,4 +1,4 @@
-# Self-supervised Learning for Flower Segmentation.
+# Self-supervised Learning for Panoptic Segmentation of Multiple Fruit Flower Species.
 
 ### Requirements: ###
 * Detectron2
