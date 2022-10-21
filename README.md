@@ -11,8 +11,8 @@
 
 1. clone this repository and go to root folder
 ```python
-git clone https://Siddiquemu@bitbucket.org/Siddiquemu/ssl_flower_panoptic.git
-cd ssl_flower_panoptic
+https://github.com/siddiquemu/ssl_flower_semantic.git
+cd ssl_flower_semantic
 ```
 2. create a environment
 ```python
@@ -21,11 +21,6 @@ pip install -r det2_requirements.yml
 
 3. setup instacne segmentation refinement method envrionment [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/)
 
-5. run the following script to prepare the repo for training/testing
-
-<!-- ```python
-bash tools/prepare_scripts.sh
-``` -->
 
 ### Data Preprocessing ###
 1. Download the train/test data and trained models from ... and move the dowloaded data and models folder into the root directory
@@ -48,7 +43,7 @@ for ITER in 1; do   bash train_semi_iters_flower_2gpus.sh SSL ${ITER} 100 2 Appl
 2. To train the SSL model using AppleA trained model and the unlabeled data: go to root directory and run
 
 ```
-for ITER in 1; do   bash train_semi_iters_flower_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
+for ITER in 1 2 3; do   bash train_semi_iters_flower_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
 
 ```
 3. To train the pretrained model using the unlabeled data: go to root directory and run using --pretrained 1 in bash train_semi_iters_flower_2gpus.sh script
