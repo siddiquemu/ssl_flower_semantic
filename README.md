@@ -19,7 +19,7 @@
 
 ### Installation ###
 
-3. This codebase is heavily based on [Detectron2] (https://github.com/facebookresearch/detectron2) an instacne segmentation refinement method [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/). Install baoth and keep RGR in the root folder
+3. This codebase is heavily based on [Detectron2](https://github.com/facebookresearch/detectron2) an instacne segmentation refinement method [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/). Install baoth and keep RGR in the root folder
 ```./ssl_flower_semantic/
 ```
 
