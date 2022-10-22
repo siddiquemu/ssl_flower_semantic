@@ -58,19 +58,29 @@ For example the data folder structure for CV=1 in root directory will be as foll
 1. To test the models, download CV1 models from ....
 <br>
 ├── SL
+|    |
 │   └── AppleA_train
 └── SSL
+    |
     ├── AppleA
+    |   |
     │   └── CV1
+    |       |
     │       └── iter3
     ├── AppleB
+    |   |
     │   └── CV1
+    |       |
     │       └── iter3
     ├── Peach
+    |   |
     │   └── CV1
+    |       |
     │       └── iter6
     └── Pear
+        |
         └── CV1
+            |
             └── iter3
 2. run the following script to evaluate the CV models
 
@@ -110,5 +120,4 @@ If you find this work helpful in your research, please cite using the following 
   journal={arXiv preprint arXiv:2209.04618},
   year={2022}
 }
-\
 ```
