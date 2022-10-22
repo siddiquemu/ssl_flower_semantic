@@ -57,31 +57,31 @@ For example the data folder structure for CV=1 in root directory will be as foll
 ### Test ###
 1. To test the models, download CV1 models from ....
 <br>
-├── SL
-|    |
-│   └── AppleA_train
-└── SSL
-    |
-    ├── AppleA
+    ├── SL
     |   |
-    │   └── CV1
-    |       |
-    │       └── iter3
-    ├── AppleB
-    |   |
-    │   └── CV1
-    |       |
-    │       └── iter3
-    ├── Peach
-    |   |
-    │   └── CV1
-    |       |
-    │       └── iter6
-    └── Pear
+    │   └── AppleA_train
+    └── SSL
         |
-        └── CV1
+        ├── AppleA
+        |   |
+        │   └── CV1
+        |       |
+        │       └── iter3
+        ├── AppleB
+        |   |
+        │   └── CV1
+        |       |
+        │       └── iter3
+        ├── Peach
+        |   |
+        │   └── CV1
+        |       |
+        │       └── iter6
+        └── Pear
             |
-            └── iter3
+            └── CV1
+                |
+                └── iter3
 2. run the following script to evaluate the CV models
 
 ```
