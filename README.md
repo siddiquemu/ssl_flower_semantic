@@ -36,52 +36,43 @@ For example the data folder structure for CV=1 in root directory will be as foll
 ```
 ./dataset/ssl_data/
 ```
-<br>
-    ├── AppleA
-    │   └── CV1
-    │       ├── test_imgs
-    │       └── train_imgs
-    ├── AppleB
-    │   └── CV1
-    │       ├── test_imgs
-    │       └── train_imgs
-    ├── Peach
-    │   └── CV1
-    │       ├── test_imgs
-    │       └── train_imgs
-    └── Pear
-        └── CV1
-            ├── test_imgs
-            └── train_imgs
+```
+├── AppleA
+│   └── CV1
+│       ├── test_imgs
+│       └── train_imgs
+├── AppleB
+│   └── CV1
+│       ├── test_imgs
+│       └── train_imgs
+├── Peach
+│   └── CV1
+│       ├── test_imgs
+│       └── train_imgs
+└── Pear
+    └── CV1
+        ├── test_imgs
+        └── train_imgs
+```
 
 ### Test ###
 1. To test the models, download CV1 models from ....
 ```
-        ├── SL
-        |   |
-        │   └── AppleA_train
-        └── SSL
-            |
-            ├── AppleA
-            |   |
-            │   └── CV1
-            |       |
-            │       └── iter3
-            ├── AppleB
-            |   |
-            │   └── CV1
-            |       |
-            │       └── iter3
-            ├── Peach
-            |   |
-            │   └── CV1
-            |       |
-            │       └── iter6
-            └── Pear
-                |
-                └── CV1
-                    |
-                    └── iter3
+├── SL
+│   └── AppleA_train
+└── SSL
+    ├── AppleA
+    │   └── CV1
+    │       └── iter3
+    ├── AppleB
+    │   └── CV1
+    │       └── iter3
+    ├── Peach
+    │   └── CV1
+    │       └── iter6
+    └── Pear
+        └── CV1
+            └── iter3
 ```
 2. run the following script to evaluate the CV models
 
