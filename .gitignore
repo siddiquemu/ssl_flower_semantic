@@ -9,7 +9,7 @@
 #*/*/*/arbit_weight/
 #*/*/*/MTL
 #*/*/*/MTL
-models/*
+# models/*
 dataset/data/*
 eval_results/*
 not_require/*
