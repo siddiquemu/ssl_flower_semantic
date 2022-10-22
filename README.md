@@ -1,6 +1,15 @@
 # Self-supervised Learning for Panoptic Segmentation of Multiple Fruit Flower Species.
 (Accepted by IEEE Robotics and Automation Letters). Preprint available at [Paper](https://arxiv.org/abs/2209.04618)
 
+# codeabse progress
+- [ ] Preprocess raw data
+- [ ] Apply data augmentation on the training data
+- [ ] Train initial panoptic model using AppleA_train
+- [x] Preapre train/test unlabeled datsets for multiple run
+- [ ] Generate panoptic pseudo-labels for finetuning the initial model
+- [ ] Train iteratively using pseudo labels
+- [x] Evaluate the model
+
 ### Requirements: ###
 * Detectron2
 * Python 3.8
@@ -26,7 +35,28 @@ pip install -r det2_requirements.yml
 
 
 ### Data Preprocessing ###
-1. Download the raw data from ....
+1. Download the raw data from (will be updated soon)
+The folder structure will be
+```
+./dataseet/raw_data/
+├── imgs
+│   ├── AppleA
+│   ├── AppleA_train
+│   ├── AppleB
+│   ├── Peach
+│   └── Pear
+└── labels
+    ├── AppleA
+    │   └── gt_frames
+    ├── AppleA_train
+    │   └── gt_frames
+    ├── AppleB
+    │   └── gt_frames
+    ├── Peach
+    │   └── gt_frames
+    └── Pear
+        └── gt_frames
+```
 2. run the following script from root to generate the train/test split for CV experiments
 ```
 python ./dataset/data_aug_train_CV.py
@@ -60,13 +90,26 @@ For example the data folder structure for CV=1 in data root directory will be as
 ```
 ├── SL
 │   └── AppleA_train
-└── SSL
+├── SSL
+│   ├── AppleA
+│   │   └── CV1
+│   │       └── iter3
+│   ├── AppleB
+│   │   └── CV1
+│   │       └── iter3
+│   ├── Peach
+│   │   └── CV1
+│   │       └── iter6
+│   └── Pear
+│       └── CV1
+│           └── iter3
+└── SSL_RGR
     ├── AppleA
     │   └── CV1
-    │       └── iter3
+    │       └── iter2
     ├── AppleB
     │   └── CV1
-    │       └── iter3
+    │       └── iter2
     ├── Peach
     │   └── CV1
     │       └── iter6
@@ -77,7 +120,7 @@ For example the data folder structure for CV=1 in data root directory will be as
 2. run the following script to evaluate the CV models
 
 ```
-python sliding_windows_RGR.py --CV 1 --data_set Pear --ssl_iter 5 --isLocal 1 --gpu_id 1
+python utils/sliding_windows_RGR.py --CV 1 --data_set AppleB --ssl_iter 3 --isLocal 1 --gpu_id 0 --model_type SSL
 ```
 
 ### Train ###
