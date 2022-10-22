@@ -17,7 +17,7 @@
 * CUDA 10.2
 * Pycocotools 2.0
 
-### Installation ###
+### [x] Installation ###
 
 3. This codebase is heavily based on [Detectron2](https://github.com/facebookresearch/detectron2) and a semantic segmentation refinement method [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/). Install baoth and keep RGR in the root folder
 ```./ssl_flower_semantic/
@@ -84,7 +84,7 @@ For example the data folder structure for CV=1 in data root directory will be as
         └── train_imgs
 ```
 
-### Test ###
+### [x] Test ###
 1. To test the models, download CV1 models from ....
 ```
 ├── SL
@@ -122,7 +122,7 @@ For example the data folder structure for CV=1 in data root directory will be as
 python utils/sliding_windows_RGR.py --CV 1 --data_set AppleB --ssl_iter 3 --isLocal 1 --gpu_id 0 --model_type SSL
 ```
 
-### Train ###
+### [] Train ###
 To train the SL model using augmented AppleA train set:
 1. run the following script from root to prepare training data
 ```
