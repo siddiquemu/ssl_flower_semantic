@@ -136,7 +136,7 @@ for ITER in ssl_iter; do   bash train_semi_iters_flower_2gpus.sh model_type ${IT
 for ITER in 1; do   bash train_semi_iters_flower_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
 ```
 
-[x] To train the SSL model using AppleA trained model and the unlabeled data: go to root directory and run
+[x] To train the SSL model using AppleA trained model and the unlabeled data:
 
 1.  go to root directory and run
 
