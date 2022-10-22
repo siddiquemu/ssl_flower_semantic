@@ -12,8 +12,10 @@
 models/*
 dataset/data/*
 eval_results/*
+not_require/*
+rgr-public/*
 #*.npy
-#*.ckpt
+*.pth
 *.zip
 
 

@@ -19,7 +19,9 @@ cd ssl_flower_semantic
 pip install -r det2_requirements.yml
 ```
 
-3. setup instacne segmentation refinement method envrionment [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/)
+3. setup instacne segmentation refinement method envrionment [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/) and keep it in the root folder
+```./ssl_flower_semantic/
+```
 
 
 ### Data Preprocessing ###
