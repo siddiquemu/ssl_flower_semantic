@@ -1,0 +1,41 @@
+MODEL:
+  META_ARCHITECTURE: "GeneralizedRCNNLogisticGMM"
+  #WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
+  #WEIGHTS: "./data/VOC-Detection/faster-rcnn/faster_rcnn_R_50_FPN_all_logistic/random_seed_0/model_final_vos_resnet_voc.pth"
+  WEIGHTS: "/home/abubakar/OOD/obj_level_ood/data/VIMAAN-Detection/faster-rcnn/vos/random_seed_0/model_final.pth"
+  MODEL_DIR: 'Panoptic_Models'
+  MODEL_TYPE: 'modified_loss_semi' #'modified_loss' 'modified_loss_wo_reg'
+  BACKBONE:
+    FREEZE_AT: 5  
+  ROI_HEADS:
+    NUM_CLASSES: 1
+    BATCH_SIZE_PER_IMAGE: 512
+  SEM_SEG_HEAD:
+    NUM_CLASSES: 2
+    LAMBDA_SEM: 0.8
+INPUT:
+  MIN_SIZE_TRAIN: (640, 672, 704, 736, 768, 800, 1080, 1152)
+  MIN_SIZE_TEST: 800
+DATASETS:
+  TRAIN: ("flower_panoptic_unlabeled_separated",)
+  TEST: ()
+SOLVER:
+  IMS_PER_BATCH: 2
+  BASE_LR: 0.0025
+  STEPS: (5000, 10000, 150000)
+  MAX_ITER: 20000
+  WARMUP_ITERS: 100
+PSEUDO_LABELS:
+  STARTING_ITER: 500 #12000
+  SAMPLE_NUMBER: 1000
+DATALOADER:
+    NUM_WORKERS: 4  # Depends on the available memory
+INFER:
+     CLASS_LIST: [1]
+     NMS_THR: 0.6
+     PRED_SCORE: 0.005
+     NUM_SEM_CLASS: 2
+     SAVE_DATA: True
+     ANGLESET: [0, 6, 12, 78, 84, 90, 96, 102, 168, 174,180, 186, 192, 258, 264, 270, 276, 342, 348, 354]
+     ANGLE_RANGES: [[1, 24], [78, 96], [168, 192], [258, 276], [342, 354]]
+     REMAP_SCORE_THR: 0.15
