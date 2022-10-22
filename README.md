@@ -56,7 +56,7 @@ For example the data folder structure for CV=1 in root directory will be as foll
 
 ### Test ###
 1. To test the models, download CV1 models from ....
-<br>
+```
         ├── SL
         |   |
         │   └── AppleA_train
@@ -82,7 +82,7 @@ For example the data folder structure for CV=1 in root directory will be as foll
                 └── CV1
                     |
                     └── iter3
-
+```
 2. run the following script to evaluate the CV models
 
 ```
