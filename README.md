@@ -34,7 +34,7 @@ pip install -r det2_requirements.yml
 ```
 
 
-### Data Preprocessing ###
+### [ ] Data Preprocessing ###
 1. Download the raw data from (will be updated soon). The folder structure will be
 ```
 ./dataseet/raw_data/
@@ -122,7 +122,7 @@ For example the data folder structure for CV=1 in data root directory will be as
 python utils/sliding_windows_RGR.py --CV 1 --data_set AppleB --ssl_iter 3 --isLocal 1 --gpu_id 0 --model_type SSL
 ```
 
-### [] Train ###
+### [ ] Train ###
 To train the SL model using augmented AppleA train set:
 1. run the following script from root to prepare training data
 ```
