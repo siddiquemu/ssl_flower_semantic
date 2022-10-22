@@ -460,12 +460,9 @@ def define_categories_dictionary():
         }]
     return categories
 
-def get_data_dirs(dataset, NAS, storage, init_params):
-    # This script should use only for inference: inference on 5k images
-    # For test-time-augmentation we will use separate script
-    #instance segmentation: 0: flower
-    #semantic segmentation: 0:, 1:
+def get_data_dirs(dataset, coderoot, init_params):
 
+    NAS = ''
     if dataset=='AppleA_train':
         init_params['data'] = 'AppleA_train'
         base_dir = NAS + '/trainTestSplit/train/dataFormattedProperly/splitImages4x3'
@@ -536,8 +533,8 @@ def get_data_dirs(dataset, NAS, storage, init_params):
         init_params['img_fmt'] = '.bmp'
     
 
-    init_params['out_dir'] = f'{storage}/tracking_wo_bnw/data/flower/{dataset}/panoptic_pred'
-    init_params['overlay_out_dir'] = f'{storage}/tracking_wo_bnw/data/flower/panoptic_pred/{dataset}/overlay_mask'
+    init_params['out_dir'] = f'{coderoot}eval_results/{dataset}/panoptic_pred'
+    init_params['overlay_out_dir'] = f'{coderoot}eval_results/{dataset}/overlay_mask'
 
     if not os.path.exists(init_params['out_dir']):
         os.makedirs(init_params['out_dir'])

@@ -14,7 +14,7 @@ def delete_all(demo_path, fmt='png'):
     except:
         print(f'{demo_path} is already empty')
 
-def get_all_dirs(args, exp, init_params, storage, models_dir, model_type, percent_gt=None,):
+def get_all_dirs(args, exp, init_params, storage, model_type):
     # datasets and model catalogs for Self-SL or Semi-SL
 
     if init_params['database']=='flower':
@@ -82,16 +82,13 @@ def get_all_dirs(args, exp, init_params, storage, models_dir, model_type, percen
             
 
             # previous model dir, CV for cross validation
-            init_params['model_path'] = os.path.join(storage, models_dir, init_params['database'],
-                                                     model_type, f'{percent_gt}_percent', args.data_set,
+            init_params['model_path'] = os.path.join(storage, 'models', model_type, args.data_set,
                                                      f"CV{init_params['CV']}", f'iter{exp - 1}', 'model_0024999.pth')
             if not os.path.exists(init_params['model_path']):                                         
-                init_params['model_path'] = os.path.join(storage, models_dir, init_params['database'],
-                                                        model_type, f'{percent_gt}_percent', args.data_set,
+                init_params['model_path'] = os.path.join(storage, 'models', model_type, args.data_set,
                                                         f"CV{init_params['CV']}", f'iter{exp - 1}', 'model_0019999.pth')
                 if not os.path.exists(init_params['model_path']):                                         
-                    init_params['model_path'] = os.path.join(storage, models_dir, init_params['database'],
-                                                            model_type, f'{percent_gt}_percent', args.data_set,
+                    init_params['model_path'] = os.path.join(storage, 'models', model_type, args.data_set,
                                                             f"CV{init_params['CV']}", f'iter{exp - 1}', 'model_0014999.pth')
             else:
                 assert os.path.exists(init_params['model_path']), '{} is not available'.format(init_params['model_path'])

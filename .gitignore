@@ -10,13 +10,16 @@
 #*/*/*/MTL
 #*/*/*/MTL
 # models/*
-dataset/data/*
+# dataset/data/*
 eval_results/*
 not_require/*
 rgr-public/*
 #*.npy
 *.pth
 *.zip
+*.jpg
+*.bmp
+*.png
 
 
 # Compiled Java class files

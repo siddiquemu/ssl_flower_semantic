@@ -3,9 +3,10 @@ import glob
 import os
 import sys
 
-coderoot = os.path.dirname(os.path.realpath(__file__))
+coderoot = os.path.dirname(os.path.realpath(__file__)).split('utils')[0]
 print(f'coderoot:{coderoot}')
-sys.path.insert(0, f'{coderoot}/rgr-public/Python')
+sys.path.insert(0, f"{coderoot}")
+sys.path.insert(0, f"{coderoot}rgr-public/Python")
 from runRGR import RGR
 import cv2
 import time
@@ -13,7 +14,7 @@ import pdb
 
 import matplotlib.pyplot as plt
 import numpy as np
-from panoptic_flower_model import panoptic_fpn_flower
+from src.panoptic_flower_model import panoptic_fpn_flower
 from box_jitter import aug_box_jitter
 from utils import get_data_dirs
 import random
@@ -26,10 +27,10 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import scipy.io as sio
-from evaluate_mask import evaluate_mask
+from tools.evaluate_mask import evaluate_mask
 from tabulate import tabulate
 import imutils
-from flower_counting import flower_counter
+from tools.flower_counting import flower_counter
 import pandas as pd
 
 
@@ -260,11 +261,6 @@ class sliding_windows(object):
         """
         Horg, Worg = img_org.shape[:2]
         mask_rot = mask
-
-
-        #mask_rot[mask_rot>0] = 255
-        #print(f'org image shape {img_org.shape}')
-        #print(f'rot mask shape {mask_rot.shape}')
         
         mask_rerot = [imutils.rotate_bound(mask, -angle) for mask in mask_rot]  # mask_image scaled to original image size
         mask_rerot = torch.stack(tuple(torch.tensor(mask_rerot).to(self.gpu_id)), dim=0)
@@ -365,9 +361,6 @@ class sliding_windows(object):
                     aug_proposals = aug_box_jitter(aug_proposals, times=jitter_size, frac=jitter_factor) # size: (len(fr_boxes),10,1,4)
                     aug_proposals = torch.stack(aug_proposals, dim=0)
                     aug_proposals = torch.reshape(aug_proposals, (len(proposals)*jitter_size, 4))
-                    #TODO: append initial proposals in augmented set
-                    #aug_proposals = torch.stack([aug_proposals,proposals], dim=0)
-                    #pdb.set_trace()
                     
 
                 pred_results = self.flower_detector.predict_single(img, pre_proposals=proposals, 
@@ -449,35 +442,10 @@ class sliding_windows(object):
         final_scoremap = torch.stack((final_scoremap, final_scoremap))
         return final_scoremap
     
-    def get_gt_mask(self, fr, data_type, imgname, nas, isLocal=1):
-        if isLocal:
-            if data_type in ['AppleA']:
-                #gt_path = f'{nas}/trainTestSplit/test/dataFormattedProperly/bMasks'
-                gt_path = f'/media/siddique/CLASP2019/flower/{data_type}_test_refined_gt/semantic/gt_frames'
-            if data_type in ['AppleA_train']:
-                #gt_path = f'{nas}/trainTestSplit/train/dataFormattedProperly/bMasks'
-                gt_path = f'/media/siddique/CLASP2019/flower/{data_type}_refined_gt/gt_frames'
-            elif data_type in  ['AppleB', 'Peach']:
-                gt_path = f'/media/siddique/CLASP2019/flower/{data_type}_test_refined_gt/semantic/gt_frames'
-            # gt_path = f'{nas}/otherFlowerDatasets/{data_type}/dataFormattedProperly/bMasks'
-            elif data_type in  ['Pear']:
-                gt_path = f'/media/siddique/CLASP2019/flower/{data_type}_test_refined_gt/gt_frames'
-            # gt_path = f'{nas}/otherFlowerDatasets/{data_type}/dataFormattedProperly/bMasks'
-        else:
-            if data_type in ['AppleA']:
-                #gt_path = f'{nas}/trainTestSplit/test/dataFormattedProperly/bMasks'
-                gt_path = f'/home/abubakarsiddique/refined_flower_gt/{data_type}_test_refined_gt/semantic/gt_frames'
-            if data_type in ['AppleA_train']:
-                #gt_path = f'{nas}/trainTestSplit/train/dataFormattedProperly/bMasks'
-                gt_path = f'/home/abubakarsiddique/refined_flower_gt/{data_type}_refined_gt/gt_frames'
-            elif data_type in  ['AppleB', 'Peach']:
-                gt_path = f'/home/abubakarsiddique/refined_flower_gt/{data_type}_test_refined_gt/semantic/gt_frames'
-                # gt_path = f'{nas}/otherFlowerDatasets/{data_type}/dataFormattedProperly/bMasks'
-            elif data_type in  ['Pear']:
-                gt_path = f'/home/abubakarsiddique/refined_flower_gt/{data_type}_test_refined_gt/gt_frames'
-                # gt_path = f'{nas}/otherFlowerDatasets/{data_type}/dataFormattedProperly/bMasks'
+    def get_gt_mask(self, fr, data_type, dataroot):
+
+        gt_path = f'{dataroot}/raw_data/labels/{data_type}/gt_frames'
         if data_type=='Pear':
-            #gt_m = cv2.imread(os.path.join(gt_path, os.path.basename(imgname).split('.')[0]+'.png'))
             gt_m = cv2.imread(gt_path + '/{:03d}.png'.format(int(fr)))
         else:
             gt_m = cv2.imread(gt_path + '/{:03d}.png'.format(int(fr)))
@@ -530,6 +498,10 @@ def parse_args():
         '--pretrained',
         help='Local or remote Server',
         default=0, type=int)
+    parser.add_argument(
+        '--model_type',
+        help='Model type: SL, SSL, SSL-RGR',
+        default='SSL', type=str)
 
     return parser.parse_args()
 
@@ -545,7 +517,7 @@ if __name__ == '__main__':
     apply_regression = 0
     apply_test_aug = 0
     rotation_sample_factor = 4 # #rotation_sample_factor angles from 5 ranges
-    vis=0
+    vis=1
     apply_rgr = 0
     plot_PR = 1
     if args.isTrain:
@@ -554,23 +526,10 @@ if __name__ == '__main__':
         iteration =args.ssl_iter
     CV = args.CV
     isLocal = args.isLocal
-    # PR curve: Pear: 0.26(SL)-0.46(iter1), iter3:ssl+rgr_train
-    # AppleA:0.4(SL) SSl-iter3, AppleB: 0.6(SSL:iter3), iter4:ssl+rgr_train
-    # Peach:0.48:iter5
-    model_type = 'SSL' #'SSL_RGR' #'SL' #'SSL_RGR'
-    seg_score_thr = 0.1
-    if isLocal:
-        mnt_drive = '/media/siddique/464a1d5c-f3c4-46f5-9dbb-bf729e5df6d62'
-        nas_dir =  '/media/siddique/RemoteServer/LabFiles/Walden'
-    else:
-        mnt_drive = '/media/siddique/6TB5'
-        nas_dir ='/media/NAS/LabFiles/Walden'
-        
-    data_root = f'{mnt_drive}/tracking_wo_bnw/data/flower/train_gt_panoptic_sw_16_8'
-    
-    #pdb.set_trace()
-    init_params = {}
+    model_type = args.model_type
+    seg_score_thr = 0.5 #used for vis
 
+    init_params = {}
     init_params['pred_score'] = 0.5 #box_pred_score
     init_params['nms_thr'] = 0.8 #box nms
     init_params['gpu_id'] = args.gpu_id
@@ -586,49 +545,43 @@ if __name__ == '__main__':
     init_params['rotation_factor'] = rotation_sample_factor
     init_params['data_already_registered'] = False
 
-
-
     #experiment on all dataset
-    for i, data_type in enumerate([args.data_set]):#['AppleB', 'AppleA', 'Peach', 'Pear']
+    for i, data_type in enumerate([args.data_set]):
         print(f'starting inference for {data_type}')
-        init_params = get_data_dirs(data_type, nas_dir, mnt_drive, init_params)
-        #initialize detector
-        model_path = f'{mnt_drive}/Panoptic_Models/flower/modified_loss_semi/100_percent'
+        init_params = get_data_dirs(data_type, coderoot, init_params)
+
+        model_path = f'{coderoot}models/{model_type}'
+        data_root = f'{coderoot}dataset'
         
         if model_type == 'SSL_RGR':
-            init_params['model_path'] = f'{model_path}/{data_type}/reported_ssl_rgr_model/iter{iteration}/model_0019999.pth'
-        
-        elif model_type == 'SSL':
-            #init_params['model_path'] = f'{model_path}/{data_type}/reported_ssl_model/iter{iteration}/model_0019999.pth'
-            #init_params['model_path'] = f'{model_path}/{data_type}/iter{iteration}/model_0019999.pth'
             init_params['model_path'] = f'{model_path}/{data_type}/CV{CV}/iter{iteration}/model_0019999.pth'
-
+        elif model_type == 'SSL':
+            init_params['model_path'] = f'{model_path}/{data_type}/CV{CV}/iter{iteration}/model_0019999.pth'
         elif model_type=='SL':
-            #init_params['model_path'] = f'{mnt_drive}/Panoptic_Models/flower/SL/100_percent/AppleA_train/iter0/model_0019999.pth'
-            init_params['model_path'] = f'{model_path}/{data_type}/iter{iteration}/model_0019999.pth'
+            init_params['model_path'] = f'{model_path}/AppleA_train/model_0019999.pth'
         else:
-            init_params['model_path'] = f'{model_path}/{data_type}/iter{iteration}/model_0019999.pth'
-        
+            print(f"see the models folder if the checkpoint: {init_params['model_path']} is available or not")
+
+        # init model and load weights
         flower_detector = panoptic_fpn_flower(init_params)
         flower_detector.init_detector()
         softmax = nn.Softmax(dim=0)
-
-        folder = glob.glob(init_params['unlabeled_img_dir']+'/*')
-        folder.sort(key=lambda f: int(''.join(filter(str.isdigit, str(f)))))
+        
         #read test set
-        test_frames = pd.read_csv(f'{data_root}/SSL_Data/{data_type}/CV{CV}/test_0.3.csv', 
+        test_frames = pd.read_csv(f'{data_root}/ssl_data/{data_type}/CV{CV}/test_0.3.csv', 
                                   header=None, index_col=0)
         pred_ms = []
         gt_ms = []
         avg_time = []
         print(test_frames.values)
         for img_path in test_frames.values[1:]:
-            img_path = f"{data_root}/SSL_Data/{data_type}/CV{CV}/test_imgs/{os.path.basename(img_path[0])}"
+            img_path = f"{data_root}/ssl_data/{data_type}/CV{CV}/test_imgs/{os.path.basename(img_path[0])}"
             print(img_path)
             st_time = time.time()
             img=cv2.imread(img_path)
             assert img is not None
             #network: image_height=749, image_width=1333
+            # define sliding window size and stride
             if init_params['data'] in ['AppleA','AppleA_train']:
                 fr = float(os.path.basename(img_path).split('.')[0].split('IMG_')[-1])
                 if fr in [361]:
@@ -646,11 +599,6 @@ if __name__ == '__main__':
                 step_size = [img.shape[1] // 8, img.shape[0] // 8]  # [step_w, step_h]
                 window_size = [img.shape[1] // 4, img.shape[0] // 4]  # [w_W, w_H]
 
-
-            # if vis_window:
-            #     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-            #     cv2.resizeWindow("image", img.shape[1] // 4, img.shape[0] // 3)
-            #if fr in [356]:
             #prepare sliding windows
             SWs = sliding_windows(img=img.copy(), step_size=step_size, window_size=window_size,
                                   gpu_id=init_params['gpu_id'], init_params=init_params, detector=flower_detector)
@@ -713,33 +661,21 @@ if __name__ == '__main__':
             if pred_mask_ins:
                 final_pred_ins = soft_mask_ins/pix_count_mask
 
-
             #applying RGR
             print(f'Frame: {fr}, total_windows: {window_id-1}, time elapsed SSL: {time.time()-st_time} secs')
             if apply_rgr:
-                # final_pred = torch.tensor(final_pred).cuda()
-                # final_pred = softmax(final_pred)
-                # final_pred = final_pred.cpu().numpy()
-
                 final_pred = SWs.rgr_refine(final_pred, img)
             else:
-                #final_pred = SWs.remove_pad(final_pred, img.shape)
-                # final_pred = torch.tensor(final_pred).cuda()
-                # final_pred = softmax(final_pred)
-                # final_pred = final_pred[0].cpu().numpy() # 0: flower, 1: bck
                 final_pred = final_pred[0]
                 if pred_mask_ins:
                     final_pred_ins = final_pred_ins[0]
 
                 if not plot_PR:
-                    final_pred[final_pred>=seg_score_thr] = 1 #Peach: 0.4, Pear:0.25, AppleB:0.4, AppleA: 0.45
+                    final_pred[final_pred>=seg_score_thr] = 1
                     final_pred[final_pred<seg_score_thr] = 0
                     if pred_mask_ins:
-                        final_pred_ins[final_pred_ins>=0.26] = 1 #Peach: 0.4, Pear:0.25, AppleB:0.4, AppleA: 0.45
+                        final_pred_ins[final_pred_ins>=0.26] = 1
                         final_pred_ins[final_pred_ins<0.26] = 0
-
-                    # final_pred+=final_pred_ins
-                    # final_pred[final_pred>0] = 1
 
 
             assert final_pred.shape[0]==img.shape[0]
@@ -748,18 +684,22 @@ if __name__ == '__main__':
             avg_time.append(time.time()-st_time)
             print(f'Frame: {fr}, average time elapsed SSL+RGR: {np.mean(avg_time)} secs')
             print(f'pred mask unique values: {np.unique(final_pred)}')
-            # final_pred = SWs.apply_area_filter(final_pred, area_thr=200)
+
             pred_ms.append(final_pred)
 
-            gt_m = SWs.get_gt_mask(fr, data_type, img_path, nas_dir, isLocal=isLocal)
+            gt_m = SWs.get_gt_mask(fr, data_type, dataroot=data_root)
             if fr in [361] and init_params['data']=='AppleA':
                 gt_m  = imutils.rotate_bound(gt_m, 90)
                 gt_m[gt_m>0] = 1
                 assert final_pred.shape==gt_m.shape
-
-            # gt_m = SWs.apply_area_filter(gt_m, area_thr=200)
             gt_ms.append(gt_m)
 
+        
+            if vis:
+                SWs.overlay_masks(img_bin=final_pred.copy()>seg_score_thr, im=img, 
+                                out_dir=init_params['overlay_out_dir'], 
+                                imgname=img_path,dpi=200, box_alpha=0.2,  
+                                gt=gt_m.copy(), show_class=True, show_gt_contours=False)
         #evaluation
         #plot PR curve
         if not apply_rgr and plot_PR:
@@ -795,13 +735,13 @@ if __name__ == '__main__':
             plt.ylabel('Precision')
             # plt.savefig(f'PR_{data_type}_iter{iteration}_{model_type}.png', dpi=200, bbox_inches='tight')
             # #save csv file to generate single figure for all datasets
-            import pandas as pd
+            
             PR_Data = pd.DataFrame({'precision': precision, 'recall': recall, 'F1':F1_score, 'IOU':IOU_score})
             PR_Data.to_csv(f'eval_results/PR_{data_type}_iter{iteration}_{model_type}_CV{CV}.csv')
             #save tau_seg for training set
             
             tau_seg = pd.DataFrame({'tau_seg': [score_max_f1]})
-            tau_seg.to_csv(f"{data_root}/SSL_Data/{data_type}/CV{CV}/tau_seg_iter{args.ssl_iter-1}.csv", index=False)
+            # tau_seg.to_csv(f"{data_root}/SSL_Data/{data_type}/CV{CV}/tau_seg_iter{args.ssl_iter-1}.csv", index=False)
             
 
         else:

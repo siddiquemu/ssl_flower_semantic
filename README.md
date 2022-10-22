@@ -10,6 +10,10 @@
 
 ### Installation ###
 
+3. This codebase is heavily based on [Detectron2] (https://github.com/facebookresearch/detectron2) an instacne segmentation refinement method [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/). Install baoth and keep RGR in the root folder
+```./ssl_flower_semantic/
+```
+
 1. clone this repository and go to root folder
 ```python
 https://github.com/siddiquemu/ssl_flower_semantic.git
@@ -20,19 +24,15 @@ cd ssl_flower_semantic
 pip install -r det2_requirements.yml
 ```
 
-3. setup instacne segmentation refinement method envrionment [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/) and keep it in the root folder
-```./ssl_flower_semantic/
-```
-
 
 ### Data Preprocessing ###
 1. Download the raw data from ....
-2. run the following script from root to generated the train/test split for CV experiments
+2. run the following script from root to generate the train/test split for CV experiments
 ```
 python ./dataset/data_aug_train_CV.py
 ```
 
-For example the data folder structure for CV=1 in root directory will be as follows
+For example the data folder structure for CV=1 in data root directory will be as follows
 ```
 ./dataset/ssl_data/
 ```
