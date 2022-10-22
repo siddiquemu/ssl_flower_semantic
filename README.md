@@ -123,8 +123,9 @@ python utils/sliding_windows_RGR.py --CV 1 --data_set AppleB --ssl_iter 3 --isLo
 ```
 
 ### [ ] Train ###
-To train the SL model using augmented AppleA train set:
+[ ] To train the SL model using augmented AppleA train set:
 1. run the following script from root to prepare training data
+
 ```
 python ./dataset/data_aug_train.py --dataset AppleA_train
 ```
@@ -134,17 +135,15 @@ python ./dataset/data_aug_train.py --dataset AppleA_train
 for ITER in ssl_iter; do   bash train_semi_iters_flower_2gpus.sh model_type ${ITER} --label_percent GPUS data_set CV; done
 for ITER in 1; do   bash train_semi_iters_flower_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
 ```
-3. To train the SSL model using AppleA trained model and the unlabeled data: go to root directory and run
+
+[x] To train the SSL model using AppleA trained model and the unlabeled data: go to root directory and run
+
+1.  go to root directory and run
 
 ```
 for ITER in 1 2 3; do   bash train_semi_iters_flower_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
+```
 
-```
-4. To train the pretrained model using the unlabeled data: go to root directory and run
-
-```
-for ITER in 1; do   bash train_semi_iters_flower_2gpus.sh SSL ${ITER} 100 2 AppleA 2; done
-```
 ### Citing ssl_flower_semantic ###
 If you find this work helpful in your research, please cite using the following bibtex
 ```
