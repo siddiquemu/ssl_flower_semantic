@@ -35,8 +35,7 @@ pip install -r det2_requirements.yml
 
 
 ### Data Preprocessing ###
-1. Download the raw data from (will be updated soon)
-The folder structure will be
+1. Download the raw data from (will be updated soon). The folder structure will be
 ```
 ./dataseet/raw_data/
 ├── imgs
