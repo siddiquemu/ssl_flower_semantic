@@ -171,9 +171,7 @@ if args.database=='flower' and args.model_type == 'SL':
 elif args.database=='flower' and args.model_type == 'SSL':
     cfg = load_labeled_data(args, cfg)
     storage = f'{coderoot}/dataset/ssl_train/aug_gt_pan/iter{args.ssl_iter}'
-    
-    if args.number_gpus>2: # use local storage in remote server
-        storage = f"/media/siddique/6TB2/aug_gt_pan/iter{args.ssl_iter}"
+
     print(f'>>>> load training data: {storage}')
        
     img_dir = f'{storage}/img1_{args.ssl_iter}'
