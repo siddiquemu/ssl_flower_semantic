@@ -7,6 +7,7 @@ Created on Wed Jul  7 11:05:16 2021
 """
 
 import os
+import sys
 from torch.utils.tensorboard import SummaryWriter
 from detectron2.engine import DefaultTrainer
 from detectron2.config import get_cfg
@@ -19,6 +20,9 @@ import pdb
 #from detectron2.data.datasets import register_coco_panoptic
 from detectron2.data.datasets import register_coco_panoptic_separated
 import argparse
+coderoot = os.path.dirname(os.path.realpath(__file__)).split('ssl_flower_semantic')[0] + 'ssl_flower_semantic'
+print(f'coderoot:{coderoot}')
+sys.path.insert(0, f"{coderoot}")
 
 def parse_args():
     """Parse input arguments"""
@@ -153,7 +157,7 @@ if args.database=='coco':
 
 if args.database=='flower' and args.model_type == 'SL':
     cfg = load_labeled_data(args, cfg)
-    storage = f'{args.working_dir}/tracking_wo_bnw/data/flower/train_gt_panoptic_sw_16_8'
+    storage = f'{coderoot}/dataset/ssl_train/train_gt_panoptic_sw_16_8'
 
     img_dir = f'{storage}/trainFlowerAug'
     panoptic_masks = f'{storage}/panoptic_labels'
@@ -166,10 +170,10 @@ if args.database=='flower' and args.model_type == 'SL':
 
 elif args.database=='flower' and args.model_type == 'SSL':
     cfg = load_labeled_data(args, cfg)
-    storage = f'{args.working_dir}/tracking_wo_bnw/data/flower/test_aug_gt_pan/iter{args.ssl_iter}'
+    storage = f'{coderoot}/dataset/ssl_train/aug_gt_pan/iter{args.ssl_iter}'
     
     if args.number_gpus>2: # use local storage in remote server
-        storage = f"/media/siddique/6TB2/test_aug_gt_pan/iter{args.ssl_iter}"
+        storage = f"/media/siddique/6TB2/aug_gt_pan/iter{args.ssl_iter}"
     print(f'>>>> load training data: {storage}')
        
     img_dir = f'{storage}/img1_{args.ssl_iter}'
@@ -220,24 +224,28 @@ cfg.DATASETS.TEST = ()
 cfg.DATALOADER.NUM_WORKERS = 2
 #for iter0 only
 if args.ssl_iter==0:
-    cfg.MODEL.WEIGHTS = '/media/siddique/464a1d5c-f3c4-46f5-9dbb-bf729e5df6d62/Panoptic_Models/flower/SL/100_percent/AppleA_train/iter0/model_0019999.pth'
-    model_dir = f'{args.working_dir}/Panoptic_Models/flower/SL'
+    cfg.MODEL.WEIGHTS = f'{coderoot}/models/{args.model_type}/AppleA_train/model_0019999.pth'
+    model_dir = f'{coderoot}/models/{args.model_type}/AppleA_train'
 else:
     #TODO: loss is not yet modified
     #previous model
-    model_dir = f'{args.working_dir}/Panoptic_Models/flower/modified_loss_semi'
-    cfg.MODEL.WEIGHTS = f'{model_dir}/{args.label_percent}_percent/{args.data_set}/CV{args.CV}/iter{args.ssl_iter-1}/model_0024999.pth'
+    model_dir = f'{coderoot}/models/{args.model_type}/{args.data_set}'
+    if args.ssl_iter==1:
+        cfg.MODEL.WEIGHTS = f'{coderoot}/models/SL/AppleA_train/model_0019999.pth'
+    else:
+        cfg.MODEL.WEIGHTS = f'/{model_dir}/CV{args.CV}/iter{args.ssl_iter-1}/model_0024999.pth'
+        
     if not os.path.exists(cfg.MODEL.WEIGHTS):
-        cfg.MODEL.WEIGHTS = f'{model_dir}/{args.label_percent}_percent/{args.data_set}/CV{args.CV}/iter{args.ssl_iter-1}/model_0019999.pth'
+        cfg.MODEL.WEIGHTS = f'/{model_dir}/CV{args.CV}/iter{args.ssl_iter-1}/model_0019999.pth'
     if not os.path.exists(cfg.MODEL.WEIGHTS):
-        cfg.MODEL.WEIGHTS = f'{model_dir}/{args.label_percent}_percent/{args.data_set}/CV{args.CV}/iter{args.ssl_iter-1}/model_0014999.pth'
+        cfg.MODEL.WEIGHTS = f'/{model_dir}/CV{args.CV}/iter{args.ssl_iter-1}/model_0014999.pth'
 
 if args.pretrained:
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-PanopticSegmentation/panoptic_fpn_R_101_3x.yaml")
 
 print(f'loaded weights: {cfg.MODEL.WEIGHTS}')
 # Directory where output files are written
-cfg.OUTPUT_DIR = f'{model_dir}/{args.label_percent}_percent/{args.data_set}/CV{args.CV}/iter{args.ssl_iter}'
+cfg.OUTPUT_DIR = f'{model_dir}/CV{args.CV}/iter{args.ssl_iter}'
 if not os.path.exists(cfg.OUTPUT_DIR):
     os.makedirs(cfg.OUTPUT_DIR)
 

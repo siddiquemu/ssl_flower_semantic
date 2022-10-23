@@ -23,10 +23,10 @@ else
     # to evaluate already trained model
     # python utils/sliding_windows_RGR.py --CV ${CV} --isTrain 1 --data_set ${DATASET} --ssl_iter ${ITER-1} --isLocal 1 --gpu_id 1
     #prepare sliding window frames to apply pseudo-labels method
-    python dataset/data_aug_train_CV.py --CV ${CV} --dataset ${DATASET}
+    # python dataset/data_aug_train_CV.py --CV ${CV} --dataset ${DATASET}
     # generate pseudo labels using 3*N processes in N GPUS
-    python tools/pseudo_labels_panoptic_flower_2gpus.py --CV ${CV} --ssl_iter ${ITER} --database flower --data_set ${DATASET} --label_percent ${PERCENT} \
-             --number_gpus ${GPUS}
+    # python tools/pseudo_labels_panoptic_flower_2gpus.py --CV ${CV} --ssl_iter ${ITER} --database flower --data_set ${DATASET} --label_percent ${PERCENT} \
+    #          --number_gpus ${GPUS} --model_type ${TYPE}
     # # train using computed pseudo labels
     python tools/trainAppleA_new.py --number_gpus ${GPUS} --CV ${CV} --ssl_iter ${ITER} --lambda_sem 0.8 --gpu_id 0 --database flower --data_set ${DATASET} \
     --label_percent ${PERCENT} --model_type ${TYPE}

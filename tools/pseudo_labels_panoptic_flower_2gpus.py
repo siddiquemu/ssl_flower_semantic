@@ -635,42 +635,35 @@ class Pseudo_Labels(panoptic_fpn_flower):
         Iterate over a video frames to collect the automatically generated semantic, instance, and panoptic pseudo labels
         """
         for fr_num in random.sample(self.img_subset, len(self.img_subset)):
-            #Peach SSL:[469470000, 470160000, 472780000, 469270000, 469260000]
-            #AppleA SSL: [468030000,468250000,468340000]
-            #AppleA SSL-RGR test: [481240000, 485900000,468030000]
-            #AppleB SSL-RGR test: [469120000]
-            #Pear SSL-RGR test: [469850000]
-            #Peach SSL-RGR test: [473670000]
-            if fr_num not in [0.466560000,0.467380000, 0.492030000]: 
-                start_time = time.time()
-                # get augmented scoremaps
-                self.get_augmented_proposals(fr_num)
-                # normalize and refine scoremap
-                if len(self.pred_scoremaps) > 0:
-                    try:
-                        #to handle cropped frames without flower
-                        assert len(self.pred_scoremaps) > 0
-                        final_scoremap = self.normalize_augment()                   
-                    except:
-                        final_scoremap = []
-                else:
+            start_time = time.time()
+            # get augmented scoremaps
+            self.get_augmented_proposals(fr_num)
+            # normalize and refine scoremap
+            if len(self.pred_scoremaps) > 0:
+                try:
+                    #to handle cropped frames without flower
+                    assert len(self.pred_scoremaps) > 0
+                    final_scoremap = self.normalize_augment()                   
+                except:
                     final_scoremap = []
+            else:
+                final_scoremap = []
 
-                if fr_num not in self.semi_frames:
-                    # use cluster modes to get pseudo-labels and
-                    # update coco data structure dict to populate the selected pseudo labels
-                    # to handle cropped frames without flower
-                    if len(final_scoremap) > 0:
-                        self.pseudo_labels_selection(fr_num, final_scoremap)
-                    else:
-                        print(f'no pseudo labels found at {fr_num}')
-                else:
+            if fr_num not in self.semi_frames:
+                # use cluster modes to get pseudo-labels and
+                # update coco data structure dict to populate the selected pseudo labels
+                # to handle cropped frames without flower
+                if len(final_scoremap) > 0:
                     self.pseudo_labels_selection(fr_num, final_scoremap)
-
-                if fr_num in self.semi_frames:
-                    print(f"PID: {self.p_id}, Labeled Frame: {fr_num}, Execution time {time.time() - start_time} secs")
                 else:
-                    print(f"PID: {self.p_id}, Unlabeled Frame: {fr_num}, Execution time {time.time() - start_time} secs")
+                    print(f'no pseudo labels found at {fr_num}')
+            else:
+                self.pseudo_labels_selection(fr_num, final_scoremap)
+
+            if fr_num in self.semi_frames:
+                print(f"PID: {self.p_id}, Labeled Frame: {fr_num}, Execution time {time.time() - start_time} secs")
+            else:
+                print(f"PID: {self.p_id}, Unlabeled Frame: {fr_num}, Execution time {time.time() - start_time} secs")
 
 
 def pseudo_main(q, init_params, i, process_frames,
@@ -728,9 +721,6 @@ def parse_args():
     parser.add_argument(
         '--database', dest='database', required=True,
         help='Database to use: clasp1 or clasp2', default='clasp2')
-    parser.add_argument(
-        '--working_dir', dest='working_dir', required=True,
-        help='Database to use: clasp1 or clasp2', default='clasp2')
 
     parser.add_argument(
         '--label_percent',
@@ -762,7 +752,7 @@ def parse_args():
         help='#GPUS in SSL',
         default=0, type=int)
 
-    parser.add_argument('--model_type', type=str, default='segm')
+    parser.add_argument('--model_type', type=str, default='SSL')
 
     parser.add_argument(
         '--no_cuda', dest='cuda', help='Do not use CUDA device', action='store_false')
@@ -793,8 +783,6 @@ if __name__ == '__main__':
     print('Called with args:')
     print(args)
     # start multiprocess for multi-camera pseudo label generation
-
-    storage = '/media/6TB_local/RAL_code'
     num_gpus=args.number_gpus
     model_type = args.model_type
     exp = args.ssl_iter
@@ -802,7 +790,7 @@ if __name__ == '__main__':
     init_params = {}
     init_params['database'] = args.database
     init_params['data'] = f'{args.database}_2021'
-    init_params['storage_dir'] = args.working_dir
+    init_params['storage_dir'] = coderoot
 
     init_params['regress_aug_prop'] = True
     init_params['semi_supervised'] = True #SSL
@@ -810,7 +798,11 @@ if __name__ == '__main__':
     init_params['verbose'] = False
 
     if args.database in ['flower']:
-        init_params['apply_rgr'] = 1
+        if model_type in ['SSL']:
+            init_params['apply_rgr'] = 0
+        else:
+            init_params['apply_rgr'] = 1
+            
         init_params['CV'] = args.CV
         init_params['angle_factor'] = args.angle_factor
         # use 0.5++
@@ -842,7 +834,7 @@ if __name__ == '__main__':
                                   'Pear':{1:0.32, 2:0.22, 3:0.48}
                                   }
         
-        init_params['regress_pred_score'] = 0.3 
+        init_params['regress_pred_score'] = 0.4 
         
     
     init_params['save_data'] = True
@@ -851,8 +843,7 @@ if __name__ == '__main__':
     init_params['angle_ranges'] = [[1, 24], [78, 96], [168, 192], [258, 276], [342, 354]]
 
     #get all required dirs
-    init_params, all_frames = get_all_dirs(args, exp, init_params, args.working_dir, 
-                                    model_type)
+    init_params, all_frames = get_all_dirs(args, exp, init_params, coderoot, model_type)
 
     #multiple process for pseudo-labels generation
     manager = mp.Manager()

@@ -18,7 +18,8 @@ def get_all_dirs(args, exp, init_params, coderoot, model_type):
     # datasets and model catalogs for Self-SL or Semi-SL
 
     if init_params['database']=='flower':
-        data_root = f'{coderoot}/ssl_train'
+        data_root = f'{coderoot}/dataset/ssl_train'
+        
         if args.data_set=='AppleA_train':
             init_params['train_img_dir'] = f'{data_root}/trainFlowerAug/'
         else:           
@@ -28,10 +29,10 @@ def get_all_dirs(args, exp, init_params, coderoot, model_type):
             #read tau_seg from test/val evaluation using previous model
             if not init_params['apply_rgr']:
                 #tau_seg = pd.read_csv(f'{data_root}/SSL_Data/{args.data_set}/CV{args.CV}/tau_seg_iter{exp-1}.csv')
-                init_params['remap_score_thr'] = 0.15#tau_seg.values[0][0]
+                init_params['remap_score_thr'] = 0.4#tau_seg.values[0][0]
                 #print(f'found score threshold from maximum F1: {tau_seg.values[0][0]}')
             else:
-                init_params['remap_score_thr'] = 0.15
+                init_params['remap_score_thr'] = 0.4
             #training data dirs
             init_params['output_dir'] = os.path.join(data_root, f'aug_gt_pan/iter{exp}')     
             if not os.path.exists(init_params['output_dir']):
@@ -68,7 +69,7 @@ def get_all_dirs(args, exp, init_params, coderoot, model_type):
                 else:
                     assert os.path.exists(init_params['model_path']), '{} is not available'.format(init_params['model_path'])
             else:
-                init_params['model_path'] = os.path.join(coderoot, 'models', model_type, 'SL',
+                init_params['model_path'] = os.path.join(coderoot, 'models', 'SL',
                                                             'AppleA_train', 'model_0019999.pth')
                 print(f"load initial model: {init_params['model_path']}")
             

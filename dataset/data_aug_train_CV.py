@@ -408,22 +408,22 @@ def get_all_data_dirs(all_args, coderoot):
     all_args['all_data']['Pear'] = f'{coderoot}/raw_data/imgs/Peach'
     all_args['all_data']['Peach'] = f'{coderoot}/raw_data/imgs/Pear'
     
-    for d_name, path in all_args['all_data'].items():
-        assert os.path.exists(path), 'not exist {}: {}'.format(d_name, path)
+    # for d_name, path in all_args['all_data'].items():
+    #     assert os.path.exists(path), 'not exist {}: {}'.format(d_name, path)
     return all_args
 
-def split_train_test(folder, out_dir=None, CV=1, train_factor=0.7, dataset=None):
-    train_imgs_dir = f'{out_dir}/{dataset}/CV{CV}/train_imgs'
+def split_train_test(folder, data_root=None, CV=1, train_factor=0.7, dataset=None):
+    train_imgs_dir = f'{data_root}/ssl_data/{dataset}/CV{CV}/train_imgs'
     if not os.path.exists(train_imgs_dir):
         os.makedirs(train_imgs_dir)
         
-    test_imgs_dir = f'{out_dir}/{dataset}/CV{CV}/test_imgs'
+    test_imgs_dir = f'{data_root}/ssl_data/{dataset}/CV{CV}/test_imgs'
     if not os.path.exists(test_imgs_dir):
         os.makedirs(test_imgs_dir)
         
-    train_csv = f'{out_dir}/{dataset}/CV{CV}/train_{train_factor}.csv'
-    test_csv = f'{out_dir}/{dataset}/CV{CV}/test_{np.round(1-train_factor, 2)}.csv'
-    try:    
+    train_csv = f'{data_root}/ssl_data/{dataset}/CV{CV}/train_{train_factor}.csv'
+    test_csv = f'{data_root}/ssl_data/{dataset}/CV{CV}/test_{np.round(1-train_factor, 2)}.csv'
+    if len(folder)>0:    
         splitted_data = {'train':[], 'test':[]}
         n_frames = list(np.arange(len(folder)))
         train_indxs = random.sample(n_frames, int(len(n_frames)*train_factor))
@@ -445,15 +445,15 @@ def split_train_test(folder, out_dir=None, CV=1, train_factor=0.7, dataset=None)
         
         splitted_train.to_csv(train_csv)
         splitted_test.to_csv(test_csv)
-    except:
+    else:
         try:
             if os.path.exists(train_csv):
-                splitted_train = pd.read_csv(train_csv)
+                splitted_train = pd.read_csv(train_csv, index_col=0)
             if os.path.exists(test_csv):
-                splitted_test = pd.read_csv(test_csv)
+                splitted_test = pd.read_csv(test_csv, index_col=0)
         except:
                assert len(folder)>0, f'raw images are not available at {dataset}'
-    
+
     return splitted_train, splitted_test
 
 def parse_args():
@@ -506,7 +506,7 @@ if __name__ == '__main__':
     data_root = f'{coderoot}/dataset'
 
     all_args = {}
-    all_args['out_dir'] = f'{coderoot}/ssl_train'
+    all_args['out_dir'] = f'{data_root}/ssl_train'
 
     if not os.path.exists(all_args['out_dir']):
         os.makedirs(all_args['out_dir'])
@@ -524,11 +524,13 @@ if __name__ == '__main__':
         
         folder.sort(key=lambda f: int(''.join(filter(str.isdigit, str(f)))))
         #split train/test 70/30
-        train_imgs, test_imgs= split_train_test(folder, out_dir=all_args['out_dir'], CV=CV, train_factor=0.7, dataset=data_type) 
+        train_imgs, test_imgs= split_train_test(folder, data_root=data_root, CV=CV, train_factor=0.7, dataset=data_type) 
         #pdb.set_trace()
         w_id = 1
-        for img_path in train_imgs.values:
-            img_path = img_path[0]
+
+        for img_path in train_imgs.values[0:3]:
+            img_path = f"{data_root}/ssl_data/{img_path[0].split('SSL_Data/')[-1]}"
+
             print(img_path)
             rgb_frames = []
             gt_frames = []
