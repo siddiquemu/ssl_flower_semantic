@@ -58,7 +58,7 @@ pip install -r det2_requirements.yml
 ```
 2. run the following script from root to generate the train/test split for CV experiments
 ```
-python ./dataset/data_aug_train_CV.py
+python ./dataset/data_aug_train_CV.py --CV 1 --dataset AppleA
 ```
 
 For example the data folder structure for CV=1 in data root directory will be as follows
@@ -132,8 +132,8 @@ python ./dataset/data_aug_train.py --dataset AppleA_train
 2.  go to root directory and run
 
 ```
-for ITER in ssl_iter; do   bash train_semi_iters_flower_2gpus.sh model_type ${ITER} --label_percent GPUS data_set CV; done
-for ITER in 1; do   bash train_semi_iters_flower_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
+for ITER in ssl_iter; do   bash train_ssl_2gpus.sh model_type ${ITER} --label_percent GPUS data_set CV; done
+for ITER in 1; do   bash train_ssl_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
 ```
 
 [x] To train the SSL model using AppleA trained model and the unlabeled data:
@@ -141,7 +141,7 @@ for ITER in 1; do   bash train_semi_iters_flower_2gpus.sh SSL ${ITER} 100 2 Appl
 1.  go to root directory and run
 
 ```
-for ITER in 1 2 3; do   bash train_semi_iters_flower_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
+for ITER in 1 2 3; do   bash train_ssl_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
 ```
 
 ### Citing ssl_flower_semantic ###
