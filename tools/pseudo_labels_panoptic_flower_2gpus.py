@@ -14,8 +14,9 @@ import glob
 import os
 import sys
 import warnings
-coderoot = os.path.dirname(os.path.realpath(__file__))
+coderoot = os.path.dirname(os.path.realpath(__file__)).split('ssl_flower_semantic')[0] + 'ssl_flower_semantic'
 print(f'coderoot:{coderoot}')
+sys.path.insert(0, f"{coderoot}")
 sys.path.insert(0, f'{coderoot}/rgr-public/Python')
 from runRGR import RGR
 
@@ -785,15 +786,9 @@ def parse_args():
     return parser.parse_args()
 
 if __name__ == '__main__':
-    #https://pytorch.org/docs/stable/multiprocessing.html
-    #mp.set_start_method('spawn')
+    
     mp.set_start_method('forkserver', force=True)
-    import warnings
-    warnings.filterwarnings("ignore")
-    # For flower:
-    #for ITER in 2; do   bash tools/train_semi_iters_flower.sh semi ${ITER} 100 2; done
-    # one iteration for pseudo labels generation takes 1 hr
-    # 2 GPUs training for 20k iterations take 2 hr 35 minutes 
+
     args = parse_args()
     print('Called with args:')
     print(args)
@@ -801,9 +796,8 @@ if __name__ == '__main__':
 
     storage = '/media/6TB_local/RAL_code'
     num_gpus=args.number_gpus
-    model_type = 'SSL' #'SL'
+    model_type = args.model_type
     exp = args.ssl_iter
-    percent_gt = args.label_percent
     
     init_params = {}
     init_params['database'] = args.database

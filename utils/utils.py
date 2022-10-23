@@ -533,8 +533,8 @@ def get_data_dirs(dataset, coderoot, init_params):
         init_params['img_fmt'] = '.bmp'
     
 
-    init_params['out_dir'] = f'{coderoot}eval_results/{dataset}/panoptic_pred'
-    init_params['overlay_out_dir'] = f'{coderoot}eval_results/{dataset}/overlay_mask'
+    init_params['out_dir'] = f'{coderoot}/eval_results/{dataset}/panoptic_pred'
+    init_params['overlay_out_dir'] = f'{coderoot}/eval_results/{dataset}/overlay_mask'
 
     if not os.path.exists(init_params['out_dir']):
         os.makedirs(init_params['out_dir'])

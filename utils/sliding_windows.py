@@ -1,15 +1,19 @@
 import copy
 import glob
 import os.path
-
+import sys
 import cv2
 import time
 import pdb
 
+coderoot = os.path.dirname(os.path.realpath(__file__)).split('ssl_flower_semantic')[0] + 'ssl_flower_semantic'
+print(f'coderoot:{coderoot}')
+sys.path.insert(0, f"{coderoot}")
+
 import matplotlib.pyplot as plt
 import numpy as np
-from panoptic_flower_model import panoptic_fpn_flower
-from utils import get_data_dirs
+from src.panoptic_flower_model import panoptic_fpn_flower
+from utils.utils import get_data_dirs
 import random
 from PIL import ImageColor
 from skimage.morphology import label
@@ -20,7 +24,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import scipy.io as sio
-from evaluate_mask import evaluate_mask
+from tools.evaluate_mask import evaluate_mask
 from tabulate import tabulate
 import imutils
 import math
@@ -257,24 +261,17 @@ class sliding_windows(object):
                 filtered_mask[label_mask==i] = 0
         return filtered_mask
     
-    def get_gt_mask(self, fr, data_type, imgname, nas):
-        if data_type in ['AppleA']:
-            #gt_path = f'{nas}/trainTestSplit/test/dataFormattedProperly/bMasks'
-            gt_path = f'/media/siddique/CLASP2019/flower/{data_type}_test_refined_gt/semantic/gt_frames'
-        if data_type in ['AppleA_train']:
-            #gt_path = f'{nas}/trainTestSplit/train/dataFormattedProperly/bMasks'
-            gt_path = f'/media/siddique/CLASP2019/flower/{data_type}_refined_gt/gt_frames'
-        elif data_type in  ['AppleB', 'Peach', 'Pear']:
-            gt_path = f'/media/siddique/CLASP2019/flower/{data_type}_test_refined_gt/gt_frames'
-           # gt_path = f'{nas}/otherFlowerDatasets/{data_type}/dataFormattedProperly/bMasks'
-        
+    def get_gt_mask(self, fr, data_type, dataroot=None):
+        assert os.path.exists(dataroot)
+    
+        gt_path = f'{dataroot}/raw_data/labels/{data_type}/gt_frames'
         if data_type=='Pear':
-            gt_m = cv2.imread(os.path.join(gt_path, os.path.basename(imgname).split('.')[0]+'.png'))
+            gt_m = cv2.imread(gt_path + '/{:03d}.png'.format(int(fr)))
         else:
             gt_m = cv2.imread(gt_path + '/{:03d}.png'.format(int(fr)))
 
         gt_m = cv2.cvtColor(gt_m, cv2.COLOR_BGR2GRAY)
-        print(f'gt mask unique values: {np.unique(gt_m)}')
+        print(f'frame {int(fr)}: gt mask unique values: {np.unique(gt_m)}')
         gt_m[gt_m > 0] = 1
         return gt_m
 
@@ -312,7 +309,7 @@ if __name__ == '__main__':
     #experiment on all dataset
     for i, data_type in enumerate(['Pear']):#['AppleB', 'AppleA', 'Peach', 'Pear']
         print(f'starting inference for {data_type}')
-        init_params = get_data_dirs(data_type, nas_dir, mnt_drive, init_params)
+        init_params = get_data_dirs(data_type, coderoot, init_params)
         #initialize detector
         if init_params['data'] == 'AppleA':
             init_params['model_path'] = f'{mnt_drive}/Panoptic_Models/flower/modified_loss_semi/100_percent/AppleA/iter{iteration}/model_0019999.pth'

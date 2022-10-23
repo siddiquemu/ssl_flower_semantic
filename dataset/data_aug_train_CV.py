@@ -1,21 +1,26 @@
 from json.tool import main
 import sys
+import os
+import glob
+import random
+coderoot = os.path.dirname(os.path.realpath(__file__)).split('ssl_flower_semantic')[0] + 'ssl_flower_semantic'
+print(f'coderoot:{coderoot}')
+sys.path.insert(0, f"{coderoot}")
+sys.path.insert(0, f'{coderoot}/rgr-public/Python')
+from runRGR import RGR
 
-from init_pseudo_labels_dir import delete_all
+from utils.init_pseudo_labels_dir import delete_all
 
-sys.path.insert(0, '/home/siddique/PANet/rgr-public/Python')
-from sliding_windows import sliding_windows
+from utils.sliding_windows import sliding_windows
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-from clasp2coco import init_annotations_info_pan, Write_To_Json, Write_Segments_info_pan, \
+from utils.clasp2coco import init_annotations_info_pan, Write_To_Json, Write_Segments_info_pan, \
     Write_ImagesInfo, Write_AnnotationInfo, load_clasp_json, get_frame_anns, define_dataset_dictionary_pan
 import pycocotools.mask as mask_util
 from skimage import measure
-import os
-import glob
-import random
+
 from PIL import ImageColor
 from skimage.morphology import label
 from skimage.measure import regionprops
@@ -27,6 +32,7 @@ import imutils
 import copy
 import pdb
 import pandas as pd
+import argparse
 
 
 class Proposal_Box(object):
@@ -391,64 +397,94 @@ class Proposal_Box(object):
             Write_To_Json(f'{self.out_dir}/panoptic_unlabeled_2021_{self.data_type}.json', self.dataset_flower_pan)
 
 
-def get_all_data_dirs(all_args):
-    """Dirs of all high resolution frames
+def get_all_data_dirs(all_args, coderoot):
+    """Dirs of all high resolution raw frames
     """
     all_args['all_data'] = {}
 
-    all_args['all_data']['AppleA_train'] = all_args['NAS'] + '/trainTestSplit/train/dataFormattedProperly'
-    # all_args['all_data']['AppleA_train'] = '/media/siddique/CLASP2019/flower/AppleA_train_refined_gt/PixelLabelData_1'
-    all_args['all_data']['AppleA'] = all_args['NAS'] + '/trainTestSplit/test/dataFormattedProperly'
-    all_args['all_data']['AppleB'] = all_args['NAS'] + '/otherFlowerDatasets/AppleB/dataFormattedProperly'
-    all_args['all_data']['Pear'] = all_args['NAS'] + '/otherFlowerDatasets/Pear/dataFormattedProperly'
-    all_args['all_data']['Peach'] = all_args['NAS'] + '/otherFlowerDatasets/Peach/dataFormattedProperly'
+    all_args['all_data']['AppleA_train'] = f'{coderoot}/raw_data/imgs/AppleA_train'
+    all_args['all_data']['AppleA'] = f'{coderoot}/raw_data/imgs/AppleA'
+    all_args['all_data']['AppleB'] = f'{coderoot}/raw_data/imgs/AppleB'
+    all_args['all_data']['Pear'] = f'{coderoot}/raw_data/imgs/Peach'
+    all_args['all_data']['Peach'] = f'{coderoot}/raw_data/imgs/Pear'
+    
     for d_name, path in all_args['all_data'].items():
         assert os.path.exists(path), 'not exist {}: {}'.format(d_name, path)
     return all_args
 
 def split_train_test(folder, out_dir=None, CV=1, train_factor=0.7, dataset=None):
-    train_imgs_dir = f'{out_dir}/SSL_Data/{dataset}/CV{CV}/train_imgs'
+    train_imgs_dir = f'{out_dir}/{dataset}/CV{CV}/train_imgs'
     if not os.path.exists(train_imgs_dir):
         os.makedirs(train_imgs_dir)
         
-    test_imgs_dir = f'{out_dir}/SSL_Data/{dataset}/CV{CV}/test_imgs'
+    test_imgs_dir = f'{out_dir}/{dataset}/CV{CV}/test_imgs'
     if not os.path.exists(test_imgs_dir):
         os.makedirs(test_imgs_dir)
         
-    splitted_data = {'train':[], 'test':[]}
-    n_frames = list(np.arange(len(folder)))
-    train_indxs = random.sample(n_frames, int(len(n_frames)*train_factor))
-    print(f'train frames: {train_indxs}, save to {train_imgs_dir}')
-    
-    for ind in n_frames:
-        img = cv2.imread(folder[ind])
-        if ind in train_indxs:
-            train_imgs_path = f'{train_imgs_dir}/{os.path.basename(folder[ind])}'
-            cv2.imwrite(train_imgs_path, img)
-            splitted_data['train'].append(train_imgs_path)
-        else:
-            test_imgs_path = f'{test_imgs_dir}/{os.path.basename(folder[ind])}'
-            cv2.imwrite(test_imgs_path, img)
-            splitted_data['test'].append(test_imgs_path)
-            
-    splitted_train = pd.DataFrame(splitted_data['train'])
-    splitted_test = pd.DataFrame(splitted_data['test'])
-    splitted_train.to_csv(f'{out_dir}/SSL_Data/{dataset}/CV{CV}/train_{train_factor}.csv')
-    splitted_test.to_csv(f'{out_dir}/SSL_Data/{dataset}/CV{CV}/test_{np.round(1-train_factor, 2)}.csv')
+    train_csv = f'{out_dir}/{dataset}/CV{CV}/train_{train_factor}.csv'
+    test_csv = f'{out_dir}/{dataset}/CV{CV}/test_{np.round(1-train_factor, 2)}.csv'
+    try:    
+        splitted_data = {'train':[], 'test':[]}
+        n_frames = list(np.arange(len(folder)))
+        train_indxs = random.sample(n_frames, int(len(n_frames)*train_factor))
+        print(f'train frames: {train_indxs}, save to {train_imgs_dir}')
+        
+        for ind in n_frames:
+            img = cv2.imread(folder[ind])
+            if ind in train_indxs:
+                train_imgs_path = f'{train_imgs_dir}/{os.path.basename(folder[ind])}'
+                cv2.imwrite(train_imgs_path, img)
+                splitted_data['train'].append(train_imgs_path)
+            else:
+                test_imgs_path = f'{test_imgs_dir}/{os.path.basename(folder[ind])}'
+                cv2.imwrite(test_imgs_path, img)
+                splitted_data['test'].append(test_imgs_path)
+                
+        splitted_train = pd.DataFrame(splitted_data['train'])
+        splitted_test = pd.DataFrame(splitted_data['test'])
+        
+        splitted_train.to_csv(train_csv)
+        splitted_test.to_csv(test_csv)
+    except:
+        try:
+            if os.path.exists(train_csv):
+                splitted_train = pd.read_csv(train_csv)
+            if os.path.exists(test_csv):
+                splitted_test = pd.read_csv(test_csv)
+        except:
+               assert len(folder)>0, f'raw images are not available at {dataset}'
     
     return splitted_train, splitted_test
+
+def parse_args():
+    """Parse input arguments"""
+    parser = argparse.ArgumentParser(description='Train a X-RCNN network')
+
+    parser.add_argument('--dataset', type=str, default='AppleA')
+
+    parser.add_argument(
+        '--CV',
+        help='cross validation run index',
+        default=1, type=int)
+
+    return parser.parse_args()
+
 
 if __name__ == '__main__':
     """This script will read all the labeled and unlabeled high resolution frames
     and run the strided sliding window to get JSON training files
     - Output size: n_theta*n_cropped_frames*n_input_frames
     """
+    args = parse_args()
+    print('Called with args:')
+    print(args)
     
+    # seeds are used to make sure the splits reamin same for each CV
     seeds_list = {1:1234, 2:123, 3:12345, 4:42, 5:104}
-    CV=5
+    CV=args.CV
     random.seed(seeds_list[CV])
     
-    data_set = 'AppleB' #'AppleA'#'AppleA_train', 'CRAID'
+    data_set = args.dataset
     prepare_train_test = True
     
     apply_color_jitter = False
@@ -467,19 +503,15 @@ if __name__ == '__main__':
     if data_set in ['CRAID']:
         apply_rotation_aug = True
 
-    storage = '/media/siddique/464a1d5c-f3c4-46f5-9dbb-bf729e5df6d62'
-    cfg_file = '/home/siddique/PANet/configs/panet/e2e_panet_R-50-FPN_2x_mask.yaml'
-    # storage = '/media/abubakarsiddique'
-    # nas_dir = '/media/NAS/Walden'
-    # cfg_file = '/media/siddique/PANet/configs/panet/e2e_panet_R-50-FPN_2x_mask.yaml'
+    data_root = f'{coderoot}/dataset'
+
     all_args = {}
-    all_args['NAS'] = '/media/siddique/RemoteServer/LabFiles/Walden'
-    all_args['out_dir'] = f'{storage}/tracking_wo_bnw/data/flower/train_gt_panoptic_sw_16_8'
+    all_args['out_dir'] = f'{coderoot}/ssl_train'
 
     if not os.path.exists(all_args['out_dir']):
         os.makedirs(all_args['out_dir'])
-    all_args['out_dir_vis'] = f'{storage}/tracking_wo_bnw/data/flower/train_gt_panoptic_sw/vis_anns'
-    all_args = get_all_data_dirs(all_args)
+    all_args['out_dir_vis'] = f"{all_args['out_dir']}/vis_anns"
+    all_args = get_all_data_dirs(all_args, coderoot)
 
     labeler = Proposal_Box(out_dir=all_args['out_dir'], colorset=colorset, rotation_aug=apply_rotation_aug,
                            color_jitter=apply_color_jitter, isLabeled=isLabeled, data_type=data_set,
@@ -488,7 +520,8 @@ if __name__ == '__main__':
     for data_type in [data_set]:  # , 'AppleB', 'Peach', 'Pear']: #['AppleA_train']:#,
         #get source data
         data_dir = all_args['all_data'][data_type]
-        folder = glob.glob(data_dir + '/flowers/*')
+        folder = glob.glob(data_dir + '/*')
+        
         folder.sort(key=lambda f: int(''.join(filter(str.isdigit, str(f)))))
         #split train/test 70/30
         train_imgs, test_imgs= split_train_test(folder, out_dir=all_args['out_dir'], CV=CV, train_factor=0.7, dataset=data_type) 
@@ -519,7 +552,7 @@ if __name__ == '__main__':
                 print(f'dataset {data_type} is not exist')
 
             SWs = sliding_windows(img=img.copy(), step_size=step_size, window_size=window_size)
-            gt_m = SWs.get_gt_mask(fr, data_type, img_path, all_args['NAS'])
+            gt_m = SWs.get_gt_mask(fr, data_type, dataroot=data_root)
 
 
             print(f'input shape: {img.shape}, gt_m shape: {gt_m.shape}')

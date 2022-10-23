@@ -1,4 +1,4 @@
-from clasp2coco import load_clasp_json, load_flower_json
+from .clasp2coco import load_clasp_json, load_flower_json
 import os
 import numpy as np
 import pdb
@@ -14,38 +14,17 @@ def delete_all(demo_path, fmt='png'):
     except:
         print(f'{demo_path} is already empty')
 
-def get_all_dirs(args, exp, init_params, storage, model_type):
+def get_all_dirs(args, exp, init_params, coderoot, model_type):
     # datasets and model catalogs for Self-SL or Semi-SL
 
     if init_params['database']=='flower':
-        # source images dirs
-        data_root = f'{storage}/tracking_wo_bnw/data/{args.database}/train_gt_panoptic_sw_16_8'
-        #init_params['train_img_dir'] = storage + f'/SoftTeacher/data/{args.database}/trainFlower/'
-        #init_params['unlabeled_img_dir'] = storage + f'/SoftTeacher/data/{args.database}/unlabeledFlower/'
-        # init_params['train_img_dir'] = storage + f'/tracking_wo_bnw/data/{args.database}/train_gt_sw/trainFlowerAug/'
-        # init_params['unlabeled_img_dir'] = storage + f'/tracking_wo_bnw/data/{args.database}/train_gt_sw/unlabeledFlower/'
-        # init_params['train_img_dir'] = storage + f'/tracking_wo_bnw/data/{args.database}/train_gt_sw/trainFlowerAug/'
-        # init_params['unlabeled_img_dir'] = storage + f'/tracking_wo_bnw/data/{args.database}/train_gt_sw/unlabeledFlowerAppleA/'
-
+        data_root = f'{coderoot}/ssl_train'
         if args.data_set=='AppleA_train':
             init_params['train_img_dir'] = f'{data_root}/trainFlowerAug/'
-            # if not os.path.exists(init_params['train_img_dir']):
-            #     os.makedirs(init_params['train_img_dir'])
-            # # else:
-            # #     delete_all(init_params['train_img_dir'])
         else:           
-            #init_params['unlabeled_img_dir'] = f'{storage}/tracking_wo_bnw/data/{args.database}/train_gt_panoptic_sw/unlabeledFlower{args.data_set}/'
             init_params['unlabeled_img_dir'] = f'{data_root}/unlabeledFlower{args.data_set}/'
-            # init_params['panoptic_masks'] = f'{storage}/panoptic_labels'
-            # init_params['panoptic_json'] = f'{storage}/panoptic_train_2021.json'
-
-            # #semantic mask> 0: flower, 255: background
-            # init_params['sem_seg_masks'] = f'{storage}/semantic_labels'
-            # init_params['instance_json'] = f'{storage}/instances_train_2021.json'
         
-
-
-        if model_type=='modified_loss_semi':
+        if model_type in ['SSL', 'SSL-RGR']:
             #read tau_seg from test/val evaluation using previous model
             if not init_params['apply_rgr']:
                 #tau_seg = pd.read_csv(f'{data_root}/SSL_Data/{args.data_set}/CV{args.CV}/tau_seg_iter{exp-1}.csv')
@@ -54,12 +33,7 @@ def get_all_dirs(args, exp, init_params, storage, model_type):
             else:
                 init_params['remap_score_thr'] = 0.15
             #training data dirs
-            benchmark = storage + f'/tracking_wo_bnw/data/{args.database}/'
-            init_params['output_dir'] = benchmark + f'test_aug_gt_pan/iter{exp}'
-            
-            if args.number_gpus>2: # use local storage in remote server
-                init_params['output_dir'] = f"{init_params['local_storage']}/iter{exp}"
-                
+            init_params['output_dir'] = os.path.join(data_root, f'aug_gt_pan/iter{exp}')     
             if not os.path.exists(init_params['output_dir']):
                 os.makedirs(init_params['output_dir'])
 
@@ -82,17 +56,21 @@ def get_all_dirs(args, exp, init_params, storage, model_type):
             
 
             # previous model dir, CV for cross validation
-            init_params['model_path'] = os.path.join(storage, 'models', model_type, args.data_set,
-                                                     f"CV{init_params['CV']}", f'iter{exp - 1}', 'model_0024999.pth')
-            if not os.path.exists(init_params['model_path']):                                         
-                init_params['model_path'] = os.path.join(storage, 'models', model_type, args.data_set,
-                                                        f"CV{init_params['CV']}", f'iter{exp - 1}', 'model_0019999.pth')
+            if exp>1:
+                init_params['model_path'] = os.path.join(coderoot, 'models', model_type, args.data_set,
+                                                        f"CV{init_params['CV']}", f'iter{exp - 1}', 'model_0024999.pth')
                 if not os.path.exists(init_params['model_path']):                                         
-                    init_params['model_path'] = os.path.join(storage, 'models', model_type, args.data_set,
-                                                            f"CV{init_params['CV']}", f'iter{exp - 1}', 'model_0014999.pth')
+                    init_params['model_path'] = os.path.join(coderoot, 'models', model_type, args.data_set,
+                                                            f"CV{init_params['CV']}", f'iter{exp - 1}', 'model_0019999.pth')
+                    if not os.path.exists(init_params['model_path']):                                         
+                        init_params['model_path'] = os.path.join(coderoot, 'models', model_type, args.data_set,
+                                                                f"CV{init_params['CV']}", f'iter{exp - 1}', 'model_0014999.pth')
+                else:
+                    assert os.path.exists(init_params['model_path']), '{} is not available'.format(init_params['model_path'])
             else:
-                assert os.path.exists(init_params['model_path']), '{} is not available'.format(init_params['model_path'])
-        
+                init_params['model_path'] = os.path.join(coderoot, 'models', model_type, 'SL',
+                                                            'AppleA_train', 'model_0019999.pth')
+                print(f"load initial model: {init_params['model_path']}")
             
         if init_params['semi_supervised']:
             #labeled frames json will be used separately during training

@@ -3,10 +3,10 @@ import glob
 import os
 import sys
 
-coderoot = os.path.dirname(os.path.realpath(__file__)).split('utils')[0]
+coderoot = os.path.dirname(os.path.realpath(__file__)).split('ssl_flower_semantic')[0] + 'ssl_flower_semantic'
 print(f'coderoot:{coderoot}')
 sys.path.insert(0, f"{coderoot}")
-sys.path.insert(0, f"{coderoot}rgr-public/Python")
+sys.path.insert(0, f"{coderoot}/rgr-public/Python")
 from runRGR import RGR
 import cv2
 import time
@@ -550,8 +550,8 @@ if __name__ == '__main__':
         print(f'starting inference for {data_type}')
         init_params = get_data_dirs(data_type, coderoot, init_params)
 
-        model_path = f'{coderoot}models/{model_type}'
-        data_root = f'{coderoot}dataset'
+        model_path = f'{coderoot}/models/{model_type}'
+        data_root = f'{coderoot}/dataset'
         
         if model_type == 'SSL_RGR':
             init_params['model_path'] = f'{model_path}/{data_type}/CV{CV}/iter{iteration}/model_0019999.pth'
