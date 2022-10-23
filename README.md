@@ -6,8 +6,8 @@
 - [ ] Apply data augmentation on the training data
 - [ ] Train initial panoptic model using AppleA_train
 - [x] Preapre train/test unlabeled datsets for multiple run
-- [ ] Generate panoptic pseudo-labels for finetuning the initial model
-- [ ] Train iteratively using pseudo labels
+- [x] Generate panoptic pseudo-labels for finetuning the initial model
+- [x] Train iteratively using pseudo labels
 - [x] Evaluate the model
 
 ### Requirements: ###
@@ -19,10 +19,6 @@
 
 ### [x] Installation ###
 
-3. This codebase is heavily based on [Detectron2](https://github.com/facebookresearch/detectron2) and a semantic segmentation refinement method [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/). Install baoth and keep RGR in the root folder
-```./ssl_flower_semantic/
-```
-
 1. clone this repository and go to root folder
 ```python
 https://github.com/siddiquemu/ssl_flower_semantic.git
@@ -32,7 +28,10 @@ cd ssl_flower_semantic
 ```python
 pip install -r det2_requirements.yml
 ```
+3. This codebase is heavily based on [Detectron2](https://github.com/facebookresearch/detectron2) and a semantic segmentation refinement method [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/). Install baoth and keep RGR in the root folder
 
+```./ssl_flower_semantic/
+```
 
 ### [ ] Data Preprocessing ###
 1. Download the raw data from [multi-species-flower](https://drive.google.com/drive/folders/1GXZTdeVZIvpU0F3oddjCqbTNi3VjxRNY?usp=sharing). The folder structure will be
@@ -136,7 +135,7 @@ for ITER in ssl_iter; do   bash train_ssl_2gpus.sh model_type ${ITER} --label_pe
 for ITER in 1; do   bash train_ssl_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
 ```
 
-[x] To train the SSL model using AppleA trained model and the unlabeled data:
+[x] To train the SSL model on the unlabeled data using AppleA trained model:
 
 1.  go to root directory and run
 
