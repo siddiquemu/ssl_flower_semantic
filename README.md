@@ -35,7 +35,7 @@ pip install -r det2_requirements.yml
 
 
 ### [ ] Data Preprocessing ###
-1. Download the raw data from (will be updated soon). The folder structure will be
+1. Download the raw data from [multi-species-flower](https://drive.google.com/drive/folders/1GXZTdeVZIvpU0F3oddjCqbTNi3VjxRNY?usp=sharing). The folder structure will be
 ```
 ./dataseet/raw_data/
 ├── imgs
@@ -85,7 +85,7 @@ For example the data folder structure for CV=1 in data root directory will be as
 ```
 
 ### [x] Test ###
-1. To test the models, download CV1 models from ....
+1. To test the models, download CV1 models from [models](https://drive.google.com/drive/folders/1vzpWOZmsXKS2NdFhIV1Vw9VcMhi669TQ?usp=sharing)
 ```
 ├── SL
 │   └── AppleA_train
