@@ -270,6 +270,7 @@ class sliding_windows(object):
         else:
             gt_m = cv2.imread(gt_path + '/{:03d}.png'.format(int(fr)))
 
+        assert gt_m is not None, gt_path + '/{:03d}.png'.format(int(fr))
         gt_m = cv2.cvtColor(gt_m, cv2.COLOR_BGR2GRAY)
         print(f'frame {int(fr)}: gt mask unique values: {np.unique(gt_m)}')
         gt_m[gt_m > 0] = 1

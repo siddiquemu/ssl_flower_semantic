@@ -634,7 +634,7 @@ class Pseudo_Labels(panoptic_fpn_flower):
         """
         Iterate over a video frames to collect the automatically generated semantic, instance, and panoptic pseudo labels
         """
-        for fr_num in random.sample(self.img_subset, len(self.img_subset)):
+        for fr_num in random.sample(self.img_subset, 10):#len(self.img_subset)
             start_time = time.time()
             # get augmented scoremaps
             self.get_augmented_proposals(fr_num)
@@ -834,7 +834,8 @@ if __name__ == '__main__':
                                   'Pear':{1:0.32, 2:0.22, 3:0.48}
                                   }
         
-        init_params['regress_pred_score'] = 0.4 
+        init_params['regress_pred_score'] = 0.4
+        init_params['remap_score_thr'] = init_params['sem_thr'][args.data_set][args.CV]
         
     
     init_params['save_data'] = True

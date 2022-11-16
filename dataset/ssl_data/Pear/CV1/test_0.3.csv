@@ -1,7 +1,7 @@
 ,0
-0,/media/siddique/464a1d5c-f3c4-46f5-9dbb-bf729e5df6d62/tracking_wo_bnw/data/flower/train_gt_panoptic_sw_16_8/SSL_Data/Pear/CV1/test_imgs/025.bmp
-1,/media/siddique/464a1d5c-f3c4-46f5-9dbb-bf729e5df6d62/tracking_wo_bnw/data/flower/train_gt_panoptic_sw_16_8/SSL_Data/Pear/CV1/test_imgs/031.bmp
-2,/media/siddique/464a1d5c-f3c4-46f5-9dbb-bf729e5df6d62/tracking_wo_bnw/data/flower/train_gt_panoptic_sw_16_8/SSL_Data/Pear/CV1/test_imgs/033.bmp
-3,/media/siddique/464a1d5c-f3c4-46f5-9dbb-bf729e5df6d62/tracking_wo_bnw/data/flower/train_gt_panoptic_sw_16_8/SSL_Data/Pear/CV1/test_imgs/037.bmp
-4,/media/siddique/464a1d5c-f3c4-46f5-9dbb-bf729e5df6d62/tracking_wo_bnw/data/flower/train_gt_panoptic_sw_16_8/SSL_Data/Pear/CV1/test_imgs/062.bmp
-5,/media/siddique/464a1d5c-f3c4-46f5-9dbb-bf729e5df6d62/tracking_wo_bnw/data/flower/train_gt_panoptic_sw_16_8/SSL_Data/Pear/CV1/test_imgs/103.bmp
+0,/media/6TB_local/RAL_code/ssl_flower_semantic/dataset/ssl_data/Pear/CV1/test_imgs/025.bmp
+1,/media/6TB_local/RAL_code/ssl_flower_semantic/dataset/ssl_data/Pear/CV1/test_imgs/031.bmp
+2,/media/6TB_local/RAL_code/ssl_flower_semantic/dataset/ssl_data/Pear/CV1/test_imgs/033.bmp
+3,/media/6TB_local/RAL_code/ssl_flower_semantic/dataset/ssl_data/Pear/CV1/test_imgs/037.bmp
+4,/media/6TB_local/RAL_code/ssl_flower_semantic/dataset/ssl_data/Pear/CV1/test_imgs/062.bmp
+5,/media/6TB_local/RAL_code/ssl_flower_semantic/dataset/ssl_data/Pear/CV1/test_imgs/103.bmp

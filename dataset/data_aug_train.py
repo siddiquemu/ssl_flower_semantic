@@ -1,17 +1,24 @@
 from json.tool import main
 import sys
+import os
 
-sys.path.insert(0, '/home/siddique/PANet/rgr-public/Python')
-from sliding_windows import sliding_windows
+# sys.path.insert(0, '/home/siddique/PANet/rgr-public/Python')
+coderoot = os.path.dirname(os.path.realpath(__file__)).split('ssl_flower_semantic')[0] + 'ssl_flower_semantic'
+print(f'coderoot:{coderoot}')
+sys.path.insert(0, f"{coderoot}")
+sys.path.insert(0, f'{coderoot}/rgr-public/Python')
+
+from utils.init_pseudo_labels_dir import delete_all
+from utils.sliding_windows import sliding_windows
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-from clasp2coco import init_annotations_info_pan, Write_To_Json, Write_Segments_info_pan, \
+from utils.clasp2coco import init_annotations_info_pan, Write_To_Json, Write_Segments_info_pan, \
     Write_ImagesInfo, Write_AnnotationInfo, load_clasp_json, get_frame_anns, define_dataset_dictionary_pan
 import pycocotools.mask as mask_util
 from skimage import measure
-import os
+
 import glob
 import random
 from PIL import ImageColor
@@ -24,7 +31,7 @@ import torchvision.transforms as T
 import imutils
 import copy
 import pdb
-
+import argparse
 
 class Proposal_Box(object):
     def __init__(self, out_dir, colorset=None, color_jitter=False, rotation_aug=False,
@@ -384,53 +391,65 @@ class Proposal_Box(object):
             Write_To_Json(f'{self.out_dir}/panoptic_unlabeled_2021_{self.data_type}.json', self.dataset_flower_pan)
 
 
-def get_all_data_dirs(all_args):
-    """Dirs of all high resolution frames
+def get_all_data_dirs(all_args, dataroot):
+    """Dirs of all high resolution raw frames
     """
     all_args['all_data'] = {}
 
-    all_args['all_data']['AppleA_train'] = all_args['NAS'] + '/trainTestSplit/train/dataFormattedProperly'
-    # all_args['all_data']['AppleA_train'] = '/media/siddique/CLASP2019/flower/AppleA_train_refined_gt/PixelLabelData_1'
-    all_args['all_data']['AppleA'] = all_args['NAS'] + '/trainTestSplit/test/dataFormattedProperly'
-    all_args['all_data']['AppleB'] = all_args['NAS'] + '/otherFlowerDatasets/AppleB/dataFormattedProperly'
-    all_args['all_data']['Pear'] = all_args['NAS'] + '/otherFlowerDatasets/Pear/dataFormattedProperly'
-    all_args['all_data']['Peach'] = all_args['NAS'] + '/otherFlowerDatasets/Peach/dataFormattedProperly'
-    for d_name, path in all_args['all_data'].items():
-        assert os.path.exists(path), 'not exist {}: {}'.format(d_name, path)
+    all_args['all_data']['AppleA_train'] = f'{dataroot}/raw_data/imgs/AppleA_train'
+    all_args['all_data']['AppleA'] = f'{dataroot}/raw_data/imgs/AppleA'
+    all_args['all_data']['AppleB'] = f'{dataroot}/raw_data/imgs/AppleB'
+    all_args['all_data']['Pear'] = f'{dataroot}/raw_data/imgs/Pear'
+    all_args['all_data']['Peach'] = f'{dataroot}/raw_data/imgs/Peach'
+    
+    # for d_name, path in all_args['all_data'].items():
+    #     assert os.path.exists(path), 'not exist {}: {}'.format(d_name, path)
     return all_args
 
+def parse_args():
+    """Parse input arguments"""
+    parser = argparse.ArgumentParser(description='Train a X-RCNN network')
+
+    parser.add_argument('--dataset', type=str, default='AppleA_train')
+
+    parser.add_argument(
+        '--CV',
+        help='cross validation run index',
+        default=1, type=int)
+
+    return parser.parse_args()
 
 if __name__ == '__main__':
     """This script will read all the labeled and unlabeled high resolution frames
     and run the strided sliding window to get JSON training files
     - Output size: n_theta*n_cropped_frames*n_input_frames
     """
-    data_set = 'Peach'#'AppleA_train'
+    args = parse_args()
+    print('Called with args:')
+    print(args)
+    
+    data_set = args.dataset
     apply_color_jitter = False
     if data_set=='AppleA_train':
-        apply_rotation_aug = True  # true for AppleA_train
+        apply_rotation_aug = True
+        isLabeled = True
     else:
         apply_rotation_aug = False
+        isLabeled = False
         
     apply_sliding_window = True
-    isLabeled = False
+    
     save_mask = True
     colorset = set()
 
 
-    storage = '/media/siddique/464a1d5c-f3c4-46f5-9dbb-bf729e5df6d62'
-    cfg_file = '/home/siddique/PANet/configs/panet/e2e_panet_R-50-FPN_2x_mask.yaml'
-    # storage = '/media/abubakarsiddique'
-    # nas_dir = '/media/NAS/Walden'
-    # cfg_file = '/media/siddique/PANet/configs/panet/e2e_panet_R-50-FPN_2x_mask.yaml'
+    data_root = f'{coderoot}/dataset'
     all_args = {}
-    all_args['NAS'] = '/media/siddique/RemoteServer/LabFiles/Walden'
-    all_args['out_dir'] = f'{storage}/tracking_wo_bnw/data/flower/train_gt_panoptic_sw_16_8'
-
+    all_args['out_dir'] = f'{data_root}/ssl_train'
     if not os.path.exists(all_args['out_dir']):
         os.makedirs(all_args['out_dir'])
-    all_args['out_dir_vis'] = f'{storage}/tracking_wo_bnw/data/flower/train_gt_panoptic_sw/vis_anns'
-    all_args = get_all_data_dirs(all_args)
+    all_args['out_dir_vis'] = f"{all_args['out_dir']}/vis_anns"
+    all_args = get_all_data_dirs(all_args, data_root)
 
     labeler = Proposal_Box(out_dir=all_args['out_dir'], colorset=colorset, rotation_aug=apply_rotation_aug,
                            color_jitter=apply_color_jitter, isLabeled=isLabeled, data_type=data_set,
@@ -438,9 +457,10 @@ if __name__ == '__main__':
 
     for data_type in [data_set]:  # , 'AppleB', 'Peach', 'Pear']: #['AppleA_train']:#,
         data_dir = all_args['all_data'][data_type]
-        folder = glob.glob(data_dir + '/flowers/*')
+        folder = glob.glob(data_dir + '/*')
         folder.sort(key=lambda f: int(''.join(filter(str.isdigit, str(f)))))
         w_id = 1
+        
         for img_path in folder:
             rgb_frames = []
             gt_frames = []
@@ -464,7 +484,7 @@ if __name__ == '__main__':
                 print(f'dataset {data_type} is not exist')
 
             SWs = sliding_windows(img=img.copy(), step_size=step_size, window_size=window_size)
-            gt_m = SWs.get_gt_mask(fr, data_type, img_path, all_args['NAS'])
+            gt_m = SWs.get_gt_mask(fr, data_type, dataroot=data_root)
 
 
             print(f'input shape: {img.shape}, gt_m shape: {gt_m.shape}')
@@ -473,22 +493,15 @@ if __name__ == '__main__':
             for (x1, y1, x2, y2, window) in SWs.sliding_window():
                 if window.shape[0] != window_size[1] or window.shape[1] != window_size[0]:
                     pdb.set_trace()
-                # print('window size: {}'.format(window.shape))
-                # print('window id: {}'.format(window_id))
-                # [x1,y1,x2,y2]
 
                 rgb_frames.append(window)
                 gt_w = gt_m[y1:y2, x1:x2]
                 assert gt_w.shape == window.shape[:2]
                 gt_frames.append(gt_w)
-                # show window annotations
                 w_name = '{:06d}.png'.format(w_id)
-                # SWs.overlay_masks_contours(img_bin=gt_w.copy(), im=window.copy(), out_dir=all_args['out_dir_vis'], imgname=w_name,
-                #         dpi=200, box_alpha=0.2, show_class=True)
-                # SWs.overlay_masks(img_bin=None, im=window.copy(), out_dir=all_args['out_dir_vis'], imgname=w_name,
-                #           dpi=200, box_alpha=0.2,  gt=gt_w.copy(),  show_class=True, show_gt_contours=True)
                 w_id += 1
 
             assert len(rgb_frames) == len(gt_frames)
             labeler.get_all_anotations(rgb_frames, gt_frames, fr)
+            
     labeler.save_anns()

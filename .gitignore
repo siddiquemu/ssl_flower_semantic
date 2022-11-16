@@ -20,6 +20,9 @@ rgr-public/*
 *.jpg
 *.bmp
 *.png
+*.jpg
+*.JPG
+*.json
 
 
 # Compiled Java class files

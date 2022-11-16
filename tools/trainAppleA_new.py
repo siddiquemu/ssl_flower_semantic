@@ -157,7 +157,7 @@ if args.database=='coco':
 
 if args.database=='flower' and args.model_type == 'SL':
     cfg = load_labeled_data(args, cfg)
-    storage = f'{coderoot}/dataset/ssl_train/train_gt_panoptic_sw_16_8'
+    storage = f'{coderoot}/dataset/ssl_train'
 
     img_dir = f'{storage}/trainFlowerAug'
     panoptic_masks = f'{storage}/panoptic_labels'
@@ -193,31 +193,6 @@ register_coco_panoptic_separated(name="flower_panoptic_unlabeled",
                                 instances_json=instance_json,
                                 gt_ext="png",image_ext="png" )
 cfg.DATASETS.TRAIN = ("flower_panoptic_unlabeled_separated",)#,"flower_panoptic_labeled_separated" #
-
-
-# =============================================================================
-# from detectron2.data import DatasetCatalog
-# DatasetCatalog.get('AppleA_pan')
-# =============================================================================
-#%%
-#from detectron2.data import MetadataCatalog
-#MetadataCatalog.get("AppleA_pan").thing_classes = ['flower']
-#MetadataCatalog.get("AppleA_pan").stuff_classes = ['background']
-#MetadataCatalog.get("AppleA_pan").thing_dataset_id_to_contiguous_id = {1:1}
-#MetadataCatalog.get("AppleA_pan").stuff_dataset_id_to_contiguous_id = {0:0}
-#MetadataCatalog.get("AppleA_pan").panoptic_json = panoptic_json
-
-
-#%%
-'''
-for n_iter in range(100):
-    writer.add_scalar('Loss/train', np.random.random(), n_iter)
-    writer.add_scalar('Loss/test', np.random.random(), n_iter)
-    writer.add_scalar('Accuracy/train', np.random.random(), n_iter)
-    writer.add_scalar('Accuracy/test', np.random.random(), n_iter)
-'''
-
-
 cfg.DATASETS.TEST = ()
 cfg.DATALOADER.NUM_WORKERS = 2
 #for iter0 only
@@ -240,18 +215,24 @@ else:
 
 if args.pretrained:
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-PanopticSegmentation/panoptic_fpn_R_101_3x.yaml")
-
-print(f'loaded weights: {cfg.MODEL.WEIGHTS}')
-# Directory where output files are written
-cfg.OUTPUT_DIR = f'{model_dir}/CV{args.CV}/iter{args.ssl_iter}'
+    # Directory where output files are written
+    cfg.OUTPUT_DIR = model_dir
+else:
+    cfg.OUTPUT_DIR = f'{model_dir}/CV{args.CV}/iter{args.ssl_iter}'
+    
 if not os.path.exists(cfg.OUTPUT_DIR):
     os.makedirs(cfg.OUTPUT_DIR)
+
+print(f'loaded weights: {cfg.MODEL.WEIGHTS}')
+
 
 cfg.SOLVER.IMS_PER_BATCH = 2
 cfg.SOLVER.BASE_LR = 0.00025 #1 gpu: 0.0025, 2 gpu: 0.005
 #weight decay: 0.0001
-cfg.SOLVER.MAX_ITER = 20000
-cfg.SOLVER.STEPS = (2000, 5000, 10000)
+# cfg.SOLVER.MAX_ITER = 20000
+# cfg.SOLVER.STEPS = (2000, 5000, 10000)
+cfg.SOLVER.MAX_ITER = 5000
+cfg.SOLVER.STEPS = (500,)
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512
 if args.database=='coco':
     print('cfg.MODEL.ROI_HEADS.NUM_CLASSES: {}'.format(cfg.MODEL.ROI_HEADS.NUM_CLASSES))

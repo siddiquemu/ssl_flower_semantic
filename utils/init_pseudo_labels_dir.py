@@ -27,12 +27,12 @@ def get_all_dirs(args, exp, init_params, coderoot, model_type):
         
         if model_type in ['SSL', 'SSL-RGR']:
             #read tau_seg from test/val evaluation using previous model
-            if not init_params['apply_rgr']:
-                #tau_seg = pd.read_csv(f'{data_root}/SSL_Data/{args.data_set}/CV{args.CV}/tau_seg_iter{exp-1}.csv')
-                init_params['remap_score_thr'] = 0.4#tau_seg.values[0][0]
-                #print(f'found score threshold from maximum F1: {tau_seg.values[0][0]}')
-            else:
-                init_params['remap_score_thr'] = 0.4
+            # if not init_params['apply_rgr']:
+            #     #tau_seg = pd.read_csv(f'{data_root}/SSL_Data/{args.data_set}/CV{args.CV}/tau_seg_iter{exp-1}.csv')
+            #     init_params['remap_score_thr'] = 0.4#tau_seg.values[0][0]
+            #     #print(f'found score threshold from maximum F1: {tau_seg.values[0][0]}')
+            # else:
+            #     init_params['remap_score_thr'] = 0.4
             #training data dirs
             init_params['output_dir'] = os.path.join(data_root, f'aug_gt_pan/iter{exp}')     
             if not os.path.exists(init_params['output_dir']):

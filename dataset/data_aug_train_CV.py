@@ -397,16 +397,16 @@ class Proposal_Box(object):
             Write_To_Json(f'{self.out_dir}/panoptic_unlabeled_2021_{self.data_type}.json', self.dataset_flower_pan)
 
 
-def get_all_data_dirs(all_args, coderoot):
+def get_all_data_dirs(all_args, dataroot):
     """Dirs of all high resolution raw frames
     """
     all_args['all_data'] = {}
 
-    all_args['all_data']['AppleA_train'] = f'{coderoot}/raw_data/imgs/AppleA_train'
-    all_args['all_data']['AppleA'] = f'{coderoot}/raw_data/imgs/AppleA'
-    all_args['all_data']['AppleB'] = f'{coderoot}/raw_data/imgs/AppleB'
-    all_args['all_data']['Pear'] = f'{coderoot}/raw_data/imgs/Peach'
-    all_args['all_data']['Peach'] = f'{coderoot}/raw_data/imgs/Pear'
+    all_args['all_data']['AppleA_train'] = f'{dataroot}/raw_data/imgs/AppleA_train'
+    all_args['all_data']['AppleA'] = f'{dataroot}/raw_data/imgs/AppleA'
+    all_args['all_data']['AppleB'] = f'{dataroot}/raw_data/imgs/AppleB'
+    all_args['all_data']['Pear'] = f'{dataroot}/raw_data/imgs/Pear'
+    all_args['all_data']['Peach'] = f'{dataroot}/raw_data/imgs/Peach'
     
     # for d_name, path in all_args['all_data'].items():
     #     assert os.path.exists(path), 'not exist {}: {}'.format(d_name, path)
@@ -430,14 +430,18 @@ def split_train_test(folder, data_root=None, CV=1, train_factor=0.7, dataset=Non
         print(f'train frames: {train_indxs}, save to {train_imgs_dir}')
         
         for ind in n_frames:
-            img = cv2.imread(folder[ind])
             if ind in train_indxs:
                 train_imgs_path = f'{train_imgs_dir}/{os.path.basename(folder[ind])}'
-                cv2.imwrite(train_imgs_path, img)
+                if not os.path.exists(train_imgs_path):    
+                    img = cv2.imread(folder[ind])
+                    cv2.imwrite(train_imgs_path, img)
+                    
                 splitted_data['train'].append(train_imgs_path)
             else:
                 test_imgs_path = f'{test_imgs_dir}/{os.path.basename(folder[ind])}'
-                cv2.imwrite(test_imgs_path, img)
+                if not os.path.exists(test_imgs_path):    
+                    img = cv2.imread(folder[ind])
+                    cv2.imwrite(test_imgs_path, img)
                 splitted_data['test'].append(test_imgs_path)
                 
         splitted_train = pd.DataFrame(splitted_data['train'])
@@ -511,13 +515,13 @@ if __name__ == '__main__':
     if not os.path.exists(all_args['out_dir']):
         os.makedirs(all_args['out_dir'])
     all_args['out_dir_vis'] = f"{all_args['out_dir']}/vis_anns"
-    all_args = get_all_data_dirs(all_args, coderoot)
+    all_args = get_all_data_dirs(all_args, data_root)
 
     labeler = Proposal_Box(out_dir=all_args['out_dir'], colorset=colorset, rotation_aug=apply_rotation_aug,
                            color_jitter=apply_color_jitter, isLabeled=isLabeled, data_type=data_set,
                            save_mask=save_mask, vis=False)
 
-    for data_type in [data_set]:  # , 'AppleB', 'Peach', 'Pear']: #['AppleA_train']:#,
+    for data_type in [data_set]:  # , 'AppleB', 'Peach', 'Pear'
         #get source data
         data_dir = all_args['all_data'][data_type]
         folder = glob.glob(data_dir + '/*')
@@ -527,17 +531,17 @@ if __name__ == '__main__':
         train_imgs, test_imgs= split_train_test(folder, data_root=data_root, CV=CV, train_factor=0.7, dataset=data_type) 
         #pdb.set_trace()
         w_id = 1
-
-        for img_path in train_imgs.values[0:3]:
-            img_path = f"{data_root}/ssl_data/{img_path[0].split('SSL_Data/')[-1]}"
+        
+        for img_path in train_imgs.values:
+            img_path = img_path[0]
 
             print(img_path)
             rgb_frames = []
             gt_frames = []
             img = cv2.imread(img_path)
 
-            if data_type in ['AppleA', 'AppleA_train']:
-                fr = float(os.path.basename(img_path).split('.')[0].split('IMG_')[-1])
+            if data_type in ['AppleA']:
+                fr = float(os.path.basename(img_path).split('.')[0])
                 step_size = [img.shape[1] // 16, img.shape[0] // 16]  # [step_w, step_h] #8.6 or 16,12 or 16, 16
                 window_size = [img.shape[1] // 8, img.shape[0] // 8]  # [w_W, w_H] #4,3 or 8,6, or 8,8
 

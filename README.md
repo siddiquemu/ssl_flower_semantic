@@ -1,10 +1,10 @@
 # Self-supervised Learning for Panoptic Segmentation of Multiple Fruit Flower Species.
-(Accepted by IEEE Robotics and Automation Letters). Preprint available at [Paper](https://arxiv.org/abs/2209.04618)
+(Published by IEEE Robotics and Automation Letters). Published version [RAL paper](https://ieeexplore.ieee.org/document/9928359) and Preprint version [arxiv paper](https://arxiv.org/abs/2209.04618)
 
 # codeabse progress
-- [ ] Preprocess raw data
-- [ ] Apply data augmentation on the training data
-- [ ] Train initial panoptic model using AppleA_train
+- [x] Preprocess raw data
+- [x] Apply data augmentation on the training data
+- [x] Train initial panoptic model using AppleA_train
 - [x] Preapre train/test unlabeled datsets for multiple run
 - [x] Generate panoptic pseudo-labels for finetuning the initial model
 - [x] Train iteratively using pseudo labels
@@ -33,7 +33,7 @@ pip install -r det2_requirements.yml
 ```./ssl_flower_semantic/
 ```
 
-### [ ] Data Preprocessing ###
+### [x] Data Preprocessing ###
 1. Download the raw data from [multi-species-flower](https://drive.google.com/drive/folders/1GXZTdeVZIvpU0F3oddjCqbTNi3VjxRNY?usp=sharing). The folder structure will be
 ```
 ./dataseet/raw_data/
@@ -122,7 +122,7 @@ python utils/sliding_windows_RGR.py --CV 1 --data_set AppleB --ssl_iter 3 --isLo
 ```
 
 ### [ ] Train ###
-[ ] To train the SL model using augmented AppleA train set:
+[x] To train the SL model using augmented AppleA train set:
 1. run the following script from root to prepare training data
 
 ```
@@ -132,7 +132,7 @@ python ./dataset/data_aug_train.py --dataset AppleA_train
 
 ```
 for ITER in ssl_iter; do   bash train_ssl_2gpus.sh model_type ${ITER} --label_percent GPUS data_set CV; done
-for ITER in 1; do   bash train_ssl_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2; done
+for ITER in 0; do   bash train_ssl_2gpus.sh SL ${ITER} 100 2 AppleA_train 0; done
 ```
 
 [x] To train the SSL model on the unlabeled data using AppleA trained model:
@@ -146,10 +146,14 @@ for ITER in 1 2 3; do   bash train_ssl_2gpus.sh SSL ${ITER} 100 2 AppleA_train 2
 ### Citing ssl_flower_semantic ###
 If you find this work helpful in your research, please cite using the following bibtex
 ```
-@article{siddique2022self,
-  title={Self-supervised Learning for Panoptic Segmentation of Multiple Fruit Flower Species},
+@ARTICLE{9928359,
   author={Siddique, Abubakar and Tabb, Amy and Medeiros, Henry},
-  journal={arXiv preprint arXiv:2209.04618},
-  year={2022}
-}
+  journal={IEEE Robotics and Automation Letters}, 
+  title={Self-Supervised Learning for Panoptic Segmentation of Multiple Fruit Flower Species}, 
+  year={2022},
+  volume={7},
+  number={4},
+  pages={12387-12394},
+  doi={10.1109/LRA.2022.3217000}}
+
 ```
