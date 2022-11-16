@@ -1,5 +1,5 @@
 # Self-supervised Learning for Panoptic Segmentation of Multiple Fruit Flower Species.
-(Published by IEEE Robotics and Automation Letters). Published version [RAL paper](https://ieeexplore.ieee.org/document/9928359) and Preprint version [arxiv paper](https://arxiv.org/abs/2209.04618)
+(Published by IEEE Robotics and Automation Letters). Published version [RAL paper](https://ieeexplore.ieee.org/document/9928359) and preprint version [arxiv paper](https://arxiv.org/abs/2209.04618)
 
 # codeabse progress
 - [x] Preprocess raw data
@@ -121,7 +121,7 @@ For example the data folder structure for CV=1 in data root directory will be as
 python utils/sliding_windows_RGR.py --CV 1 --data_set AppleB --ssl_iter 3 --isLocal 1 --gpu_id 0 --model_type SSL
 ```
 
-### [ ] Train ###
+### [x] Train ###
 [x] To train the SL model using augmented AppleA train set:
 1. run the following script from root to prepare training data
 
