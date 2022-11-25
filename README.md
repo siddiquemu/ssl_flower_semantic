@@ -29,7 +29,6 @@ cd ssl_flower_semantic
 pip install -r det2_requirements.yml
 ```
 3. This codebase is heavily based on [Detectron2](https://github.com/facebookresearch/detectron2) and a semantic segmentation refinement method [RGR](https://bitbucket.org/phil_dias/rgr-public/src/master/). Install both and keep RGR in the root folder
-
 ```ssl_flower_semantic
 ```
 
