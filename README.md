@@ -24,7 +24,7 @@
 https://github.com/siddiquemu/ssl_flower_semantic.git
 cd ssl_flower_semantic
 ```
-2. create a environment
+2. create environment
 ```python
 pip install -r det2_requirements.yml
 ```
